@@ -1,0 +1,118 @@
+.Page[b-689jevmq0y] {
+    background-color: #efefef;
+    padding: 20px 40px 20px;
+    height: 100%;
+    height: calc(100vh - 300px);
+}
+
+.Page__Header[b-689jevmq0y] {
+    width: 100%;
+    border-radius: 5px;
+    margin-bottom: 24px;
+    border: 1px solid var(--gtt-grey);
+    background-color: white;
+}
+
+.Page__Header__Titre[b-689jevmq0y] {
+    padding: 20px;
+    border-bottom: 1px solid var(--gtt-grey);
+}
+
+.Page__Header__Body[b-689jevmq0y] {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.Page__Header__Body__Actions[b-689jevmq0y] {
+    padding: 20px;
+    display: flex;
+    flex-direction: row;
+    column-gap: 20px;
+}
+
+.Page__Header__Formulaire[b-689jevmq0y] {
+    padding: 20px;
+    display: flex;
+    column-gap: 20px;
+    width: 80%;
+}
+
+.Page__Header__Formulaire__Gauche[b-689jevmq0y] {
+    display: flex;
+    align-items: center;
+}
+
+.Page__Header__Formulaire__Droite[b-689jevmq0y] {
+    display: flex;
+    align-items: center;
+}
+
+.Page__Header__Actions[b-689jevmq0y] {
+    background-color: darkred;
+}
+
+.Page__Tableau[b-689jevmq0y] {
+    border: 1px solid var(--gtt-grey);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.PopupCompagnie__Contenu[b-689jevmq0y] {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 30px 50px 20px;
+}
+
+.PopupCompagnie__Contenu__Haut[b-689jevmq0y] {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    column-gap: 40px;
+    align-items: flex-start;
+}
+
+.PopupCompagnie__Contenu__Validation[b-689jevmq0y] {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    row-gap: 20px;
+    align-items: stretch;
+    margin-top: 30px;
+}
+
+
+.PopupCompagnie__Formulaire[b-689jevmq0y] {
+    width: calc(50% - 20px);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.PopupCompagnie__Formulaire__Item[b-689jevmq0y] {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 30px;
+}
+
+.PopupCompagnie__Formulaire[b-689jevmq0y] {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.PopupCompagnie__Formulaire__Item[b-689jevmq0y] {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.PopupCompagnie__Formulaire__Submit[b-689jevmq0y] {
+    width: 100%;
+    display: flex;
+    margin-top: 40px;
+}

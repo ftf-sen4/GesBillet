@@ -1,0 +1,32 @@
+﻿@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+<PageTitle>Gestions des Titres de Transport</PageTitle>
+
+<div class="page">
+   <NavMenu />
+   <OperationsBoite />
+   <main>
+      @Body
+   </main>
+</div>
+<NotificationUI />
+
+@code {
+
+    [CascadingParameter] protected Task<AuthenticationState>? AuthStat { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+        base.OnInitialized();
+        await RenvoiePageConnexionSiUserPasConnecter();
+    }
+
+    private async Task RenvoiePageConnexionSiUserPasConnecter()
+    {
+        var user = (await AuthStat).User;
+        if (!user.Identity.IsAuthenticated)
+        {
+            NavigationManager.NavigateTo($"/connexion");
+        }
+    }
+}

@@ -1,0 +1,10 @@
+.page[b-0fprfyl3ps] {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 90px);
+}
+
+main[b-0fprfyl3ps] {
+    flex: 1;
+}

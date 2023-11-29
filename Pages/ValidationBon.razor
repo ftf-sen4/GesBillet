@@ -1,0 +1,504 @@
+﻿@page "/validation-bon"
+
+@inject IConfiguration _config
+@inject ICompagnieService compagnieService
+@inject IFichierService fichierService
+@inject IAgenceDeVoyageService agenceDeVoyageService
+@inject IClasseVoyageService classeVoyageService
+@inject IFicheDeMissionService ficheDeMissionService
+@inject INotificationUIService notificationUIService
+
+@inject IValidationBonService validerBonService
+
+@inject IJSRuntime JS
+@inject CreerPDFService creerPDFService
+@inject IWebHostEnvironment Environment
+
+
+<SfDialog Height="1000px" Width="1200px" ShowCloseIcon IsModal @bind-Visible="SiPopupConsultationBonDePassageVisible">
+	<DialogTemplates>
+		<Header>
+			<div class="PopupBon__EnTete">
+				<div class="GTT_Titre2">Consulter le Bon de Passage</div>
+				<div class="GTT_Body16">Vérifiez les informations du bon de passage.</div>
+			</div>
+		</Header>
+		<Content>
+			<div class="PopupBon__Contenu">
+				<div class="PopupBon__Contenu__Haut">
+					<div class="PopupBon__Formulaire">
+						<div class="PopupBon__Formulaire__Item">
+							<label class="PopupBon__Formulaire__Item__Label">
+								*Agence de voyage
+							</label>
+							<SfDropDownList Readonly TItem="Agencevoyage" TValue="int" @bind-Value="ConsulterBonPModel.IDAgenceVoyage" PopupHeight="230px" Placeholder="ASKY..." DataSource="@AgencesDeVoyage">
+								<DropDownListFieldSettings Text="Libelleagencevoyage" Value="Idagencevoyage" />
+								<DropDownListEvents TItem="Agencevoyage" TValue="int"></DropDownListEvents>
+								<DropDownListTemplates TItem="Agencevoyage">
+									<NoRecordsTemplate>
+										<span> Aucune donnée disponible.</span>
+									</NoRecordsTemplate>
+								</DropDownListTemplates>
+							</SfDropDownList>
+						</div>
+						<div class="PopupBon__Formulaire__Item">
+							<label class="PopupBon__Formulaire__Item__Label">
+								Observation
+							</label>
+							<SfTextBox Multiline=true Readonly @bind-Value="ConsulterBonPModel.Observation"></SfTextBox>
+						</div>
+					</div>
+					<div class="PopupBon__Contenu__Haut__Droite">
+					</div>
+				</div>
+				<div class="PopupBon__Contenu__Bas">
+					<SfGrid Height="400" DataSource="@ListeDesTitresDeTransport" AllowTextWrap TValue="AffichageTitreAvecPJ" RowHeight="60">
+						<GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
+						<GridColumns>
+							<GridColumn Field=@nameof(AffichageTitreAvecPJ.RefFicheDeMission) HeaderText="FICHE MISSION" TextAlign="TextAlign.Left" Width="160"></GridColumn>
+							<GridColumn Field=@nameof(AffichageTitreAvecPJ.LibelleClasse) HeaderText="CLASSE" TextAlign="TextAlign.Left" Width="120"></GridColumn>
+							<GridColumn Field=@nameof(AffichageTitreAvecPJ.MontantTitreDeTransport) Format="N0" HeaderText="MONTANT" TextAlign="TextAlign.Left" Width="120"></GridColumn>
+							<GridColumn Field=@nameof(AffichageTitreAvecPJ.ListePiecesJointes) HeaderText="PIECES JOINTES" TextAlign="TextAlign.Left" Width="160">
+								<Template>
+									@{
+										var pieceJointe = context as AffichageTitreAvecPJ;
+										var indexFichier = 1;
+										foreach (var fichier in pieceJointe.ListePiecesJointes)
+										{
+											var nomFichierAfficher = $"{fichier.Nom}";
+											<span @onclick="() => AfficherFichierSurNouvellePage(fichier.CheminAbsolu, nomFichierAfficher)" class="GTT_Body12 GTT__Lien">@nomFichierAfficher</span>
+											<br />
+											indexFichier++;
+										}
+									}
+								</Template>
+							</GridColumn>
+						</GridColumns>
+						<GridTemplates>
+							<EmptyRecordTemplate>
+								<EspaceVide />
+							</EmptyRecordTemplate>
+						</GridTemplates>
+					</SfGrid>
+				</div>
+				<div class="PopupBon__Contenu__Soumission">
+					@{
+						if (Statut != "Valides")
+						{
+							<button style="width: 100%" @onclick="OuvrirPopupValiderUniqueBonDePassage" class="GTTbutton GTT_Button_Validation PopupBon__Contenu__Soumission__Item">
+								Valider
+							</button>
+							<button style="width: 100%" @onclick="OuvrirPopupRenvoyerUniqueBonDePassage" class="GTTbutton GTT_Button_Danger PopupBon__Contenu__Soumission__Item">
+								Renvoyer
+							</button>
+						}
+					}
+				</div>
+			</div>
+		</Content>
+	</DialogTemplates>
+	<DialogEvents OnClose="@EffacerFormulaireConsultation" />
+</SfDialog>
+
+<SfDialog Width="500" ShowCloseIcon IsModal @bind-Visible="SiPopupRenvoiBonDePassageVisible">
+	<DialogTemplates>
+		<Header>
+			<div class="ModalHeader">
+				<div class="ModalHeader__Title GTT_Titre2">Renvoi du Bon de Passage</div>
+			</div>
+		</Header>
+		<Content>
+			<EditForm Model="RenvoiModel" OnValidSubmit="RenvoyerBonDePasssage">
+				<DataAnnotationsValidator />
+				<div class="ModalRenvoi__Form">
+					<div class="ModalRenvoi__Form__Item">
+						<label class="ModalRenvoi__Form__Item__Label">
+							Motif de renvoi
+						</label>
+						<SfTextBox Multiline=true Placeholder="Entrez le motif de renvoi ici..." @bind-Value="@RenvoiModel.MotifDeRenvoi"></SfTextBox>
+						<ValidationMessage For="@(() => RenvoiModel.MotifDeRenvoi)" />
+					</div>
+					<button type="submit" class="GTTbutton GTT_Button_Danger">
+						Renvoyer à l'étape précédente.
+					</button>
+				</div>
+			</EditForm>
+		</Content>
+	</DialogTemplates>
+	<DialogEvents OnClose="@EffacerFormulaireRenvoi" />
+</SfDialog>
+
+<Modal Titre="Envoyer"
+	   Description="Souhaitez-vous envoyer le(s) Bon(s) de Passage à l'étape supérieure ?"
+	   SiModalVisible="SiPopupEnvoyerMultipleBonDePassage"
+	   OnPositiveClickCallback="@EnvoyerBonDePassageEnETapeSuperieure"
+	   OnNegativeClickCallback="@AnnulerEnvoyerBonDePassageEnETapeSuperieure" />
+
+<Modal Titre="Validation"
+	   Description="Souhaitez-vous valider le Bon de Passage ?"
+	   SiModalVisible="SiPopupValiderBonDePassageVisible"
+	   OnPositiveClickCallback="@ValiderBonDePassage"
+	   OnNegativeClickCallback="@AnnulerValiderBonDePassage" />
+
+<Modal Titre="Validation"
+	   Description="Souhaitez-vous valider le(s) titre(s) de transport saisi(s) ?"
+	   SiModalVisible="SiPopupValiderMultipleBonDePassageVisible"
+	   OnPositiveClickCallback="@ValiderMultipleBonDePassage"
+	   OnNegativeClickCallback="@AnnulerValiderMultipleBonDePassage" />
+
+<div class="Page">
+	<div class="Page__Header">
+		<div class="Page__Header__Titre GTT_Titre3">Validations des bons de passage</div>
+		<div class="Page__Header__Body">
+			<form class="Page__Header__Formulaire" @onsubmit="RafraichirListeBon" method="POST">
+				<div style="display: flex;
+								flex-direction: row;
+								align-items: center;
+								column-gap: 20px;
+								">
+					<SfRadioButton @onchange="RafraichirListeBon" Label="En traitement" Name="Status" Value="EnCours" @bind-Checked="Statut"></SfRadioButton>
+					<SfRadioButton @onchange="RafraichirListeBon" Label="Validés" Name="Status" Value="Valides" @bind-Checked="Statut"></SfRadioButton>
+				</div>
+				<SfTextBox Width="200px" Placeholder="Rechercher" ID="TermeDeRecherche" @bind-Value="TermeDeRecherche"></SfTextBox>
+				<div style="display: flex; align-items: center; column-gap: 20px;">
+					<div>Du</div>
+					<SfDatePicker Width="140px" TValue="DateTime?" @bind-Value="@DateDebut"></SfDatePicker>
+					<div>Au</div>
+					<SfDatePicker Width="140px" TValue="DateTime?" @bind-Value="@DateFin"></SfDatePicker>
+				</div>
+				<SfButton IsPrimary type="submit">Rafraichir</SfButton>
+			</form>
+			<div class="Page__Header__Body__Actions">
+				@if(Statut == "EnCours")
+				{
+					<button @onclick="OuvrirPopupValiderMultipleBonDePassage" disabled="@(ListeIDBonSelectionnes.Count < 1)" class="GTTbutton GTT_Button_Neutre">
+						Valider
+					</button>
+				}
+				@if(Statut == "Valides")
+				{
+					<button @onclick="OuvrirPopupEnvoyerMultipleBonDePassage" disabled="@(ListeIDBonSelectionnes.Count < 1)" class="GTTbutton GTT_Button_Validation">
+						Envoyer
+					</button>
+				}
+			</div>
+		</div>
+	</div>
+	<div class="Page__Tableau">
+		<SfGrid DataSource="@ListeDesBonsDePassage" TValue="AffichageBon" RowHeight="60">
+			<GridSelectionSettings CheckboxOnly></GridSelectionSettings>
+			<GridEvents RowSelected="RowSelectHandlerBonDePassage" RowDeselected="@RowDeselectHandlerBonDePassage" TValue="AffichageBon"></GridEvents>
+			<GridColumns>
+				<GridColumn Type="ColumnType.CheckBox" Width="50"></GridColumn>
+				<GridColumn Field=@nameof(AffichageBon.IDBondePassage) HeaderText="N° BON" TextAlign="TextAlign.Left" Width="120"></GridColumn>
+				<GridColumn Field="@nameof(AffichageBon.DateDeSaisie)" HeaderText="DATE & HEURE DE SAISIE" Width="200">
+					<Template>
+						@{
+							var Details = context as AffichageBon;
+							if (Details.DateDeSaisie.HasValue)
+							{
+								<div>@(Details.DateDeSaisie.Value.ToString("dd MMMM yyyy HH:mm"))</div>
+							}
+						}
+					</Template>
+				</GridColumn>
+				<GridColumn Field=@nameof(AffichageBon.LibelleAgenceDeVoyage) HeaderText="AGENCE" TextAlign="TextAlign.Left" Width="200"></GridColumn>
+				<GridColumn Field=@nameof(AffichageBon.NombreDeBillets) HeaderText="NOMBRE DE TITRE" TextAlign="TextAlign.Left" Width="200"></GridColumn>
+				<GridColumn Field=@nameof(AffichageBon.Observation) HeaderText="OBSERVATION" TextAlign="TextAlign.Left" Width="200"></GridColumn>
+				<GridColumn HeaderText="ACTIONS" TextAlign="TextAlign.Left">
+					<Template>
+						@{
+							var Details = (context as AffichageBon);
+							<div style="display: flex; column-gap: 20px;">
+								<button @onclick="@(()=> RowAfficherPopupConsultation(Details.IDBondePassage))" class="GTT_Icon_Button GTT_Icon_Button_Eye">
+									<img src="/images/eye_icon_bouton.svg" width="24" height="24" />
+								</button>
+								@if (Statut == "Valides")
+								{
+									<button @onclick="@(()=> RowImprimerBonDePassage(Details.IDBondePassage))" class="GTT_Icon_Button GTT_Icon_Button_Print">
+										<img src="/images/print_icon_bouton.svg" width="24" height="24" />
+									</button>
+								}
+							</div>
+						}
+					</Template>
+				</GridColumn>
+				<GridTemplates>
+					<EmptyRecordTemplate Context="contextNoRecord">
+						<EspaceVide Contenu="Ajoutez un bon de passage pour voir apparaître des éléments dans la liste." />
+					</EmptyRecordTemplate>
+				</GridTemplates>
+			</GridColumns>
+		</SfGrid>
+	</div>
+</div>
+
+@code {
+	private bool SiPopupModificationVisible { get; set; } = false;
+	private bool SiPopupRenvoiBonDePassageVisible { get; set; } = false;
+	private bool SiPopupValiderBonDePassageVisible { get; set; } = false;
+	private bool SiPopupEnvoyerMultipleBonDePassage { get; set; } = false;
+	private bool SiPopupSupprimerBonDePassageVisible { get; set; } = false;
+	private bool SiPopupConsultationBonDePassageVisible { get; set; } = false;
+	private bool SiPopupValiderMultipleBonDePassageVisible { get; set; } = false;
+
+	private int IDBondePassageEnCours { get; set; }
+	private RenvoiModel RenvoiModel = new RenvoiModel();
+
+	private List<Agencevoyage>? AgencesDeVoyage;
+	private CreerBonDePassageModel ConsulterBonPModel = new CreerBonDePassageModel();
+
+	private bool SiBonDePassageRenvoi = false;
+
+	private string Statut { get; set; } = "EnCours";
+	private List<int> ListeIDBonSelectionnes = new List<int>();
+	private string TermeDeRecherche { get; set; } = String.Empty;
+	private DateTime? DateFin { get; set; } = DateTime.Now.AddDays(20);
+	private DateTime? DateDebut { get; set; } = DateTime.Now.AddDays(-20);
+
+	private List<AffichageTitreAvecPJ> ListeDesTitresDeTransport = new List<AffichageTitreAvecPJ>();
+	private List<AffichageBon> ListeDesBonsDePassage = new List<AffichageBon>();
+
+	protected async override Task OnInitializedAsync()
+	{
+		AgencesDeVoyage = await agenceDeVoyageService.ObtenirAgencesDeVoyages();
+		await RafraichirListeBon();
+	}
+
+	private async Task RafraichirListeBon()
+	{
+		ListeIDBonSelectionnes.Clear();
+		ListeDesBonsDePassage = await validerBonService.ObtenirListeBon(new ValidationBonRechercheModel()
+			{
+				DateFin = DateFin,
+				DateDebut = DateDebut,
+				TermeDeRecherche = TermeDeRecherche,
+				EnCours = Statut == "EnCours",
+				Valides = Statut == "Valides",
+				Rejetes = Statut == "Rejetes"
+			});
+	}
+
+	private void AfficherMessageErreur(Exception exception)
+	{
+		notificationUIService.CacherChargement();
+		notificationUIService.AfficherMessage(new NotificationData()
+			{
+				Message = exception.Message,
+				TypeMessage = TypeDeNotification.Erreur
+			});
+	}
+
+	private async void RowImprimerBonDePassage(int IDBonDePassage)
+	{
+		notificationUIService.MontrerChargement();
+		ImprimerBonModel Model = await validerBonService.ObtenirModelBonAImprimer(IDBonDePassage);
+		MemoryStream excelStream = creerPDFService.ImprimerBonDePassageTest(Model);
+		var DateDeSaisie = Model?.DateSaisie.Value.ToString("dd/MM/yyyy");
+		var NumeroBonDePassage = Model?.IDBonDePassage.ToString("D11");
+
+		await JS.InvokeAsync<object>(
+					"saveAsFile",
+					$"BonDePassage_N°{NumeroBonDePassage}_{DateDeSaisie}.pdf",
+					Convert.ToBase64String(excelStream.ToArray()));
+		notificationUIService.CacherChargement();
+	}
+
+	private async void RowAfficherPopupConsultation(int IDBonDePassage)
+	{
+		try
+		{
+			IDBondePassageEnCours = IDBonDePassage;
+			notificationUIService.MontrerChargement();
+			var Resultat = await validerBonService.ObtenirDetailsBon(IDBonDePassage);
+
+			ConsulterBonPModel.Observation = Resultat.Observation;
+			ConsulterBonPModel.IDAgenceVoyage = Resultat.IDAgenceVoyage;
+
+			ListeDesTitresDeTransport = Resultat.ListeTitres;
+			SiPopupConsultationBonDePassageVisible = true;
+			notificationUIService.CacherChargement();
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void OuvrirPopupEnvoyerMultipleBonDePassage()
+	{
+		SiPopupEnvoyerMultipleBonDePassage = true;
+	}
+
+	private void OuvrirPopupValiderMultipleBonDePassage()
+	{
+		SiPopupValiderMultipleBonDePassageVisible = true;
+	}
+
+	private void OuvrirPopupValiderUniqueBonDePassage()
+	{
+		SiPopupValiderBonDePassageVisible = true;
+	}
+
+	private void OuvrirPopupRenvoyerUniqueBonDePassage()
+	{
+		SiPopupRenvoiBonDePassageVisible = true;
+	}
+
+	private void EffacerFormulaireRenvoi()
+	{
+		ListeDesTitresDeTransport.Clear();
+		RenvoiModel = new RenvoiModel();
+	}
+
+	private void EffacerFormulaireConsultation()
+	{
+		ListeDesTitresDeTransport.Clear();
+		ConsulterBonPModel = new CreerBonDePassageModel();
+	}
+
+	private async void EnvoyerBonDePassageEnETapeSuperieure()
+	{
+		try
+		{
+			notificationUIService.MontrerChargement();
+			await validerBonService.EnvoyerBonEtapeSup(ListeIDBonSelectionnes);
+			notificationUIService.AfficherMessage(new NotificationData()
+				{
+					Message = "Bon(s) de passage envoyé(s) à l'étape supérieure.",
+					TypeMessage = TypeDeNotification.Succes
+				});
+			notificationUIService.CacherChargement();
+			SiPopupEnvoyerMultipleBonDePassage = false;
+			await RafraichirListeBon();
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void AnnulerEnvoyerBonDePassageEnETapeSuperieure()
+	{
+		SiPopupEnvoyerMultipleBonDePassage = false;
+	}
+
+	private async void ValiderBonDePassage()
+	{
+		try
+		{
+			notificationUIService.MontrerChargement();
+			await validerBonService.ValiderBon(IDBondePassageEnCours);
+			notificationUIService.AfficherMessage(new NotificationData()
+				{
+					Message = "Bon de passage validé avec succès.",
+					TypeMessage = TypeDeNotification.Succes
+				});
+			notificationUIService.CacherChargement();
+
+			SiPopupValiderBonDePassageVisible = false;
+			SiPopupConsultationBonDePassageVisible = false;
+			IDBondePassageEnCours = 0;
+			ListeIDBonSelectionnes.Clear();
+			await RafraichirListeBon();
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void AnnulerValiderBonDePassage()
+	{
+		SiPopupValiderBonDePassageVisible = false;
+	}
+
+	private async void ValiderMultipleBonDePassage()
+	{
+		try
+		{
+			notificationUIService.MontrerChargement();
+			await validerBonService.ValiderBon(ListeIDBonSelectionnes);
+
+			notificationUIService.CacherChargement();
+			SiPopupValiderMultipleBonDePassageVisible = false;
+			ListeIDBonSelectionnes.Clear();
+			await RafraichirListeBon();
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void AnnulerValiderMultipleBonDePassage()
+	{
+		SiPopupValiderMultipleBonDePassageVisible = false;
+	}
+
+	private async void RenvoyerBonDePasssage()
+	{
+		try
+		{
+			notificationUIService.MontrerChargement();
+			await validerBonService.RenvoyerBon(IDBondePassageEnCours, RenvoiModel.MotifDeRenvoi);
+			notificationUIService.AfficherMessage(new NotificationData()
+				{
+					Message = "Bon de Passage renvoyé avec succès.",
+					TypeMessage = TypeDeNotification.Succes
+				});
+
+			IDBondePassageEnCours = 0;
+			SiBonDePassageRenvoi = false;
+			SiPopupRenvoiBonDePassageVisible = false;
+			SiPopupConsultationBonDePassageVisible = false;
+
+			await RafraichirListeBon();
+			StateHasChanged();
+			notificationUIService.CacherChargement();
+		}
+		catch (Exception exception)
+		{
+			notificationUIService.CacherChargement();
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private async void AfficherFichierSurNouvellePage(string CheminAbsoluFichier, string NomFichier)
+	{
+		FileStream StreamFichier = new FileStream(CheminAbsoluFichier, System.IO.FileMode.Open, System.IO.FileAccess.Read);
+		MemoryStream stream = new MemoryStream();
+		StreamFichier.CopyTo(stream);
+		byte[] byteArray = stream.ToArray();
+		await JS.InvokeAsync<object>("openStreamInNewWindow", Convert.ToBase64String(byteArray), NomFichier);
+	}
+
+	private void RowSelectHandlerBonDePassage(RowSelectEventArgs<AffichageBon> args)
+	{
+		if (args.IsInteracted)
+		{
+			ListeIDBonSelectionnes.Add(args.Data.IDBondePassage);
+		}
+		if (args.IsHeaderCheckboxClicked)
+		{
+			ListeIDBonSelectionnes.Clear();
+			ListeIDBonSelectionnes = ListeDesBonsDePassage.Select(bonp => bonp.IDBondePassage).ToList();
+		}
+	}
+
+	private void RowDeselectHandlerBonDePassage(RowDeselectEventArgs<AffichageBon> args)
+	{
+		if (args.IsInteracted)
+		{
+			ListeIDBonSelectionnes.Remove(args.Data.IDBondePassage);
+		}
+		if (args.IsHeaderCheckboxClicked)
+		{
+			ListeIDBonSelectionnes.Clear();
+		}
+	}
+}

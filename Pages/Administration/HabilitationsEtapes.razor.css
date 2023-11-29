@@ -1,0 +1,109 @@
+﻿.Page {
+    background-color: #efefef;
+    padding: 20px 40px 20px;
+    height: calc(100vh - 80px);
+}
+
+.Page__Header {
+    width: 100%;
+    border-radius: 5px;
+    margin-bottom: 24px;
+    border: 1px solid var(--gtt-grey);
+    background-color: white;
+}
+
+.Page__Header__Titre {
+    padding: 20px;
+    border-bottom: 1px solid var(--gtt-grey);
+}
+
+.Page__Header__Body {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.Page__Header__Body__Actions {
+    padding: 20px;
+    display: flex;
+    flex-direction: row;
+    column-gap: 20px;
+}
+
+.Page__Header__Formulaire {
+    padding: 20px;
+    display: flex;
+    column-gap: 20px;
+    width: 80%;
+}
+
+.Page__Header__Formulaire__Gauche {
+    display: flex;
+    align-items: center;
+}
+
+.Page__Header__Formulaire__Droite {
+    display: flex;
+    align-items: center;
+}
+
+.Page__Header__Actions {
+    background-color: darkred;
+}
+
+.Page__Tableau {
+    border: 1px solid var(--gtt-grey);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.PopupAuto {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: 20px;
+}
+
+.PopupAuto__Formulaire {
+    display: flex;
+    column-gap: 20px;
+    width: 100%;
+    justify-content: flex-start;
+    align-items: stretch;
+}
+
+.PopupAuto__Formulaire__Grille {
+    display: flex;
+    flex-direction: column;
+    width: 33%;
+}
+
+.PopupAuto__Formulaire__Grille__Recherche {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    column-gap: 20px;
+    margin-bottom: 20px;
+}
+
+.PopupAuto__Formulaire__Etapes {
+    width: 33%;
+    margin-top: 50px;
+}
+
+.PopupAuto__Formulaire__Expiration {
+    display: flex;
+    flex-direction: column;
+    width: 33%;
+    row-gap: 10px;
+    margin-top: 80px;
+}
+
+.PopupAuto__Formulaire__Expiration__Element {
+
+}
+
+.PopupAuto__Soumission {
+    margin-top: 20px;
+}

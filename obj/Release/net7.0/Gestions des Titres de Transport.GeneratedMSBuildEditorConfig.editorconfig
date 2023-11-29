@@ -1,0 +1,161 @@
+is_global = true
+build_property.TargetFramework = net7.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = Gestions_des_Titres_de_Transport
+build_property.RootNamespace = Gestions_des_Titres_de_Transport
+build_property.ProjectDir = C:\Users\tmp_dpakakpo\source\repos\Gestions des Titres de Transport\
+build_property.RazorLangVersion = 7.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = C:\Users\tmp_dpakakpo\source\repos\Gestions des Titres de Transport
+build_property._RazorSourceGeneratorDebug = 
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/App.razor]
+build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Composants/EspaceVide.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9zYW50c1xFc3BhY2VWaWRlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Composants/MessageRenvoi.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9zYW50c1xNZXNzYWdlUmVudm9pLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Composants/Modal/Modal.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9zYW50c1xNb2RhbFxNb2RhbC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Composants/OperationsBoite.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9zYW50c1xPcGVyYXRpb25zQm9pdGUucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Pages/Administration/Etapes.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5pc3RyYXRpb25cRXRhcGVzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Pages/Administration/HabilitationsEtapes.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5pc3RyYXRpb25cSGFiaWxpdGF0aW9uc0V0YXBlcy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Pages/Administration/HabilitationsRoles.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5pc3RyYXRpb25cSGFiaWxpdGF0aW9uc1JvbGVzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Pages/Design.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRGVzaWduLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Shared/NavMenu.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXE5hdk1lbnUucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = X0ltcG9ydHMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Pages/Accueil.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWNjdWVpbC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = b-djq1bkk07x
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Pages/Administration/AgencesVoyage.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5pc3RyYXRpb25cQWdlbmNlc1ZveWFnZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = b-2m27we62no
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Pages/Administration/ClassesDeVoyage.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5pc3RyYXRpb25cQ2xhc3Nlc0RlVm95YWdlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = b-bx02ldgcom
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Pages/Administration/Compagnies.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5pc3RyYXRpb25cQ29tcGFnbmllcy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = b-689jevmq0y
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Pages/Connexion.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ29ubmV4aW9uLnJhem9y
+build_metadata.AdditionalFiles.CssScope = b-4uy1lbplrq
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Pages/SaisieAvoir.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2Fpc2llQXZvaXIucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-7wrx6tuxir
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Pages/SaisieBEAvoir.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2Fpc2llQkVBdm9pci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = b-slavezzdyf
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Pages/SaisieBEReglement.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2Fpc2llQkVSZWdsZW1lbnQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-3qquj4x4xm
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Pages/SaisieBon.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2Fpc2llQm9uLnJhem9y
+build_metadata.AdditionalFiles.CssScope = b-bz0w9rqbxw
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Pages/SaisieFacture.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2Fpc2llRmFjdHVyZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = b-1d60tjumms
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Pages/SaisieRemboursement.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2Fpc2llUmVtYm91cnNlbWVudC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = b-0o7rvxac5d
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Pages/SaisieTitre.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2Fpc2llVGl0cmUucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-ttiy6mcipl
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Pages/ValidationAvoir.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVmFsaWRhdGlvbkF2b2lyLnJhem9y
+build_metadata.AdditionalFiles.CssScope = b-97a8d3lhkz
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Pages/ValidationBEAvoir.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVmFsaWRhdGlvbkJFQXZvaXIucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-dnumx366b6
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Pages/ValidationBEReglement.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVmFsaWRhdGlvbkJFUmVnbGVtZW50LnJhem9y
+build_metadata.AdditionalFiles.CssScope = b-0cpanxjpad
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Pages/ValidationBon.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVmFsaWRhdGlvbkJvbi5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = b-m1yfy9sjkc
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Pages/ValidationFacture.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVmFsaWRhdGlvbkZhY3R1cmUucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-whaz8rdabt
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Pages/ValidationRemboursement.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVmFsaWRhdGlvblJlbWJvdXJzZW1lbnQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-vepbrxla5r
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Pages/ValidationTitre.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVmFsaWRhdGlvblRpdHJlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = b-ussi25ftgx
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Shared/AdministrationLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXEFkbWluaXN0cmF0aW9uTGF5b3V0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = b-0fprfyl3ps
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Shared/LoginLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXExvZ2luTGF5b3V0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = b-trj93v6d7o
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Shared/MainLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXE1haW5MYXlvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-7rx2n9mk2b
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Shared/NotificationUI.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXE5vdGlmaWNhdGlvblVJLnJhem9y
+build_metadata.AdditionalFiles.CssScope = b-ubbkg3gey4
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Pages/Error.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRXJyb3IuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/tmp_dpakakpo/source/repos/Gestions des Titres de Transport/Pages/_Host.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcX0hvc3QuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 

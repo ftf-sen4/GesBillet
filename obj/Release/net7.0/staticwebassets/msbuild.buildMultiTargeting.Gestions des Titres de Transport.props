@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\Gestions des Titres de Transport.props" />
+</Project>

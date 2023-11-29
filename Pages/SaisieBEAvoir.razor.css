@@ -1,0 +1,142 @@
+﻿.Page {
+    background-color: #efefef;
+    padding: 20px 40px 20px;
+    height: 100%;
+    height: calc(100vh - 300px);
+}
+
+.Page__Header {
+    width: 100%;
+    border-radius: 5px;
+    margin-bottom: 24px;
+    border: 1px solid var(--gtt-grey);
+    background-color: white;
+}
+
+.Page__Header__Titre {
+    padding: 20px;
+    border-bottom: 1px solid var(--gtt-grey);
+}
+
+.Page__Header__Body {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.Page__Header__Body__Actions {
+    padding: 20px;
+    display: flex;
+    flex-direction: row;
+    column-gap: 20px;
+}
+
+.Page__Header__Formulaire {
+    padding: 20px;
+    display: flex;
+    column-gap: 20px;
+    width: 80%;
+}
+
+.Page__Header__Formulaire__Gauche {
+    display: flex;
+    align-items: center;
+}
+
+.Page__Header__Formulaire__Droite {
+    display: flex;
+    align-items: center;
+}
+
+.Page__Header__Actions {
+    background-color: darkred;
+}
+
+.Page__Tableau {
+    border: 1px solid var(--gtt-grey);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.PopupBEA__Contenu {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 30px 50px 20px;
+}
+
+.PopupBEA__Contenu__Haut {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    column-gap: 40px;
+    align-items: flex-start;
+}
+
+.PopupBEA__Contenu__Bas {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+}
+
+.PopupBEA__Contenu__Soumission {
+    margin-top: 30px;
+}
+
+.PopupBEA__Contenu__Soumission__Item {
+    width: 100%;
+}
+
+.PopupBEA__Contenu__Haut__Droite {
+    width: calc(50% - 20px);
+}
+
+.PopupBEA__Formulaire {
+    width: calc(50% - 20px);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.PopupBEA__Formulaire__Item {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 30px;
+}
+
+.PopupBEA__Formulaire__Item__FileInput {
+    padding: 5px 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--gtt-amber);
+    cursor: pointer;
+    font-weight: bold;
+    color: var(--gtt-black);
+}
+
+.PopupBEA__Formulaire__Item__File {
+    padding: 4px 8px;
+    background-color: var(--gtt-lightgrey);
+}
+
+
+.PopupBEA__TitreSelection__Item {
+    padding: 4px 8px;
+    border: 1px dashed var(--gtt-grey);
+}
+
+.ModalRenvoi__Form {
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+}
+
+.ModalRenvoi__Form__Item {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 30px;
+}

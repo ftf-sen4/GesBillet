@@ -1,0 +1,89 @@
+﻿<div class="Operations">
+	<div class="Operations__Liste">
+@*		<AuthorizeView Roles="@ConstantesEtapes.SAISI_TITRE.ToString()">
+			<Authorized>
+				<NavLink href="/saisie-titre" Match="NavLinkMatch.All" class="Operations__Liste__Element">
+					SAISIE DES TITRES DE TRANSPORT
+				</NavLink>
+			</Authorized>
+		</AuthorizeView>*@
+		<NavLink href="/saisie-titre" Match="NavLinkMatch.All" class="Operations__Liste__Element">
+			SAISIE DES TITRES DE TRANSPORT
+		</NavLink>
+		<NavLink href="/validation-titre" Match="NavLinkMatch.All" class="Operations__Liste__Element">
+			VALIDATION DES TITRES DE TRANSPORT
+		</NavLink>
+		<NavLink href="/saisie-bon" Match="NavLinkMatch.All" class="Operations__Liste__Element">
+			BON DE PASSAGE
+		</NavLink>
+		<NavLink href="/saisie-bereglement" Match="NavLinkMatch.All" class="Operations__Liste__Element">
+			BE DE REGLEMENT
+		</NavLink>
+		@*<NavLink href="/validation-bereglement" Match="NavLinkMatch.All" class="Operations__Liste__Element">
+			VALIDATION BE REGLEMENT
+		</NavLink>*@
+		<NavLink href="/saisie-remboursement" Match="NavLinkMatch.All" class="Operations__Liste__Element">
+			REMBOURSEMENT
+		</NavLink>
+		<NavLink href="/saisie-avoir" Match="NavLinkMatch.All" class="Operations__Liste__Element">
+			FACTURE D'AVOIR
+		</NavLink>
+		@*<NavLink href="/validation-remboursement" Match="NavLinkMatch.All" class="Operations__Liste__Element">
+			VALIDER DEMANDE DE REMBOURSEMENT
+		</NavLink>
+		
+		<NavLink href="/validation-avoir" Match="NavLinkMatch.All" class="Operations__Liste__Element">
+			VALIDATION DE FACTURE D'AVOIR
+		</NavLink>*@
+@*		<NavLink href="/saisie-beavoir" Match="NavLinkMatch.All" class="Operations__Liste__Element">
+			SAISIE BEAVOIR
+		</NavLink>
+		<NavLink href="/validation-beavoir" Match="NavLinkMatch.All" class="Operations__Liste__Element">
+			VALIDATION BEAVOIR
+		</NavLink>*@
+	</div>
+</div>
+<style>
+	.Operations {
+		padding: 20px 40px 20px;
+		background-color: var(--gtt-lightgrey);
+	}
+
+	.Operations__Liste {
+		display: flex;
+		flex-direction: row;
+		border: 1px solid var(--gtt-grey);
+		border-radius: 5px;
+		overflow: hidden;
+		overflow-x: auto;
+	}
+
+	.Operations__Liste__Element {
+		font-size: 14px;
+		font-family: 'Open Sans';
+		font-weight: 600;
+		padding: 15px;
+		color: var(--gtt-grey);
+		background-color: var(--gtt-white);
+		text-transform: uppercase;
+		text-align: center;
+		max-width: 200px;
+		min-height: 80px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		text-decoration: none;
+	}
+
+	.Operations__Liste__Element.active {
+		background-color: var(--gtt-grey);
+		color: var(--gtt-lightgrey);
+	}
+
+	.Operations__Liste__Element:hover {
+		background-color: var(--gtt-grey);
+		color: var(--gtt-lightgrey);
+	}
+</style>
+

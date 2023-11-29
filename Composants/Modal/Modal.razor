@@ -1,0 +1,37 @@
+﻿<SfDialog Width="500" IsModal ShowCloseIcon=false @bind-Visible="SiModalVisible">
+	<DialogTemplates>
+		<Content>
+			<div class="GTT_Modal">
+				<div class="GTT_Modal__Titre">@Titre</div>
+				<div class="GTT_Modal__Message">
+					@Description
+				</div>
+				<div class="GTT_Modal__Actions">
+					<div role="button" @onclick="OnPositiveClickCallback" @onclick:preventDefault class="GTT_Modal__Bouton GTT_Modal__Bouton_Oui">
+						Continuer
+					</div>
+					<div role="button" @onclick="OnNegativeClickCallback" @onclick:preventDefault class="GTT_Modal__Bouton GTT_Modal__Bouton_Non">
+						Annuler
+					</div>
+				</div>
+			</div>
+		</Content>
+	</DialogTemplates>
+</SfDialog>
+
+@code {
+	[Parameter]
+	public bool SiModalVisible { get; set; } = false;
+
+	[Parameter]
+	public string Titre { get; set; } = String.Empty;
+
+	[Parameter]
+	public string Description { get; set; } = String.Empty;
+
+	[Parameter]
+	public EventCallback OnPositiveClickCallback { get; set; }
+
+	[Parameter]
+	public EventCallback OnNegativeClickCallback { get; set; }
+}

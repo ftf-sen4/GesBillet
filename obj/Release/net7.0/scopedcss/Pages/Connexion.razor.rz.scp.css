@@ -1,0 +1,51 @@
+.loginPage[b-4uy1lbplrq] {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	background-image: url(/images/back.jpg);
+	background-repeat: repeat;
+	background-size: contain;
+}
+
+.loginPage__Form[b-4uy1lbplrq] {
+	background-color: var(--gtt-white);
+	margin-top: -100px;
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	justify-content: center;
+	width: 500px;
+	border: 1px solid darkgrey;
+	border-radius: 10px;
+	padding: 40px;
+	padding-bottom: 80px;
+}
+
+.loginPage__Form__Title[b-4uy1lbplrq] {
+	width: 100%;
+	margin-bottom: 5px;
+}
+
+.loginPage__Form__SubTitle[b-4uy1lbplrq] {
+	text-align: left;
+	margin-bottom: 40px;
+}
+
+.loginPage__Form__Content[b-4uy1lbplrq] {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	row-gap: 30px;
+}
+
+.loginPage__Form__Field[b-4uy1lbplrq] {
+}
+
+.loginBox[b-4uy1lbplrq] {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}

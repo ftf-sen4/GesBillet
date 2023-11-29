@@ -1,0 +1,190 @@
+﻿.Page {
+	background-color: #efefef;
+	padding: 20px 40px 20px;
+	height: 100%;
+	height: calc(100vh - 300px);
+}
+
+.Page__Header {
+	width: 100%;
+	border-radius: 5px;
+	margin-bottom: 24px;
+	border: 1px solid var(--gtt-grey);
+	background-color: white;
+}
+
+.Page__Header__Titre {
+	padding: 20px;
+	border-bottom: 1px solid var(--gtt-grey);
+}
+
+.Page__Header__Body {
+	width: 100%;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+}
+
+.Page__Header__Body__Actions {
+	padding: 20px;
+	display: flex;
+	flex-direction: row;
+	column-gap: 20px;
+}
+
+.Page__Header__Formulaire {
+	padding: 20px;
+	display: flex;
+	column-gap: 20px;
+	width: 80%;
+}
+
+.Page__Header__Formulaire__Gauche {
+	display: flex;
+	align-items: center;
+}
+
+.Page__Header__Formulaire__Droite {
+	display: flex;
+	align-items: center;
+}
+
+.Page__Header__Actions {
+	background-color: darkred;
+}
+
+.Page__Tableau {
+	border: 1px solid var(--gtt-grey);
+	border-radius: 5px;
+	overflow: hidden;
+}
+
+.PopupBER__Contenu {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	padding: 30px 50px 20px;
+}
+
+.PopupBER__Contenu__Haut {
+	width: 100%;
+	display: flex;
+	flex-direction: row;
+	column-gap: 40px;
+	align-items: flex-start;
+}
+
+.PopupBER__Contenu__Bas {
+	width: 100%;
+	display: flex;
+	align-items: flex-start;
+}
+
+.PopupBER__Contenu__Soumission {
+	margin-top: 30px;
+}
+
+.PopupBER__Contenu__Soumission__Item {
+	width: 100%;
+}
+
+.PopupBER__Formulaire {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+}
+
+.PopupBER__Formulaire__Haut {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	margin-bottom: 20px;
+}
+
+.PopupBER__Formulaire__Haut__Item {
+	width: calc(33% - 10px);
+	display: flex;
+	flex-direction: column;
+}
+
+.PopupBER__Formulaire__LigneFacture {
+	border-radius: 5px;
+	border: 1px solid grey;
+	overflow: hidden;
+	margin-bottom: 30px;
+}
+
+.PopupBER__Formulaire__LigneFacture__EnTete {
+	width: 100%;
+	background-color: gold;
+	padding: 10px 20px;
+	font-weight: 600;
+}
+
+.PopupBER__Formulaire__LigneFacture__Contenu {
+	padding: 20px;
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	column-gap: 10px;
+	row-gap: 20px;
+	align-items: stretch;
+	justify-content: space-between;
+}
+
+.PopupBER__Formulaire__LigneFacture__RefFactureItem {
+	width: calc(50% - 10px);
+}
+
+.PopupBER__Formulaire__LigneFacture__TitreListItem {
+	width: calc(100%);
+}
+
+.PopupBER__Formulaire__LigneFacture__DateEmissionFactureItem {
+	width: calc(50% - 10px);
+}
+
+.PopupBER__TitreSelection__Item {
+	padding: 4px 8px;
+	border: 1px dashed var(--gtt-grey);
+}
+
+.TemplateTitre {
+	padding: 10px;
+}
+
+.TemplateTitre__Nom {
+	font-family: "Open Sans" !important;
+	font-weight: bold !important;
+	font-size: 12px !important;
+	line-height: 14px;
+	margin-bottom: 6px;
+}
+
+.TemplateTitre__Ref {
+	font-family: "Open Sans" !important;
+	font-weight: bold !important;
+	font-size: 16px !important;
+	line-height: 16px;
+	margin-bottom: 6px;
+}
+
+.TemplateTitre__Routing {
+	font-family: "Open Sans" !important;
+	font-weight: 500 !important;
+	font-size: 14px !important;
+	line-height: 14px;
+	margin-bottom: 6px;
+}
+
+.TemplateTitre__Classe {
+	font-family: "Open Sans" !important;
+	font-weight: 500 !important;
+	font-size: 14px !important;
+	line-height: 14px;
+}
+
+.PopupChoisirTitre__Contenu {
+	padding: 20px;
+}

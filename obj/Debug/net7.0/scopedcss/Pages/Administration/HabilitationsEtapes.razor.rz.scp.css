@@ -1,0 +1,109 @@
+.Page[b-wn0alxgzcb] {
+    background-color: #efefef;
+    padding: 20px 40px 20px;
+    height: calc(100vh - 80px);
+}
+
+.Page__Header[b-wn0alxgzcb] {
+    width: 100%;
+    border-radius: 5px;
+    margin-bottom: 24px;
+    border: 1px solid var(--gtt-grey);
+    background-color: white;
+}
+
+.Page__Header__Titre[b-wn0alxgzcb] {
+    padding: 20px;
+    border-bottom: 1px solid var(--gtt-grey);
+}
+
+.Page__Header__Body[b-wn0alxgzcb] {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.Page__Header__Body__Actions[b-wn0alxgzcb] {
+    padding: 20px;
+    display: flex;
+    flex-direction: row;
+    column-gap: 20px;
+}
+
+.Page__Header__Formulaire[b-wn0alxgzcb] {
+    padding: 20px;
+    display: flex;
+    column-gap: 20px;
+    width: 80%;
+}
+
+.Page__Header__Formulaire__Gauche[b-wn0alxgzcb] {
+    display: flex;
+    align-items: center;
+}
+
+.Page__Header__Formulaire__Droite[b-wn0alxgzcb] {
+    display: flex;
+    align-items: center;
+}
+
+.Page__Header__Actions[b-wn0alxgzcb] {
+    background-color: darkred;
+}
+
+.Page__Tableau[b-wn0alxgzcb] {
+    border: 1px solid var(--gtt-grey);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.PopupAuto[b-wn0alxgzcb] {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: 20px;
+}
+
+.PopupAuto__Formulaire[b-wn0alxgzcb] {
+    display: flex;
+    column-gap: 20px;
+    width: 100%;
+    justify-content: flex-start;
+    align-items: stretch;
+}
+
+.PopupAuto__Formulaire__Grille[b-wn0alxgzcb] {
+    display: flex;
+    flex-direction: column;
+    width: 33%;
+}
+
+.PopupAuto__Formulaire__Grille__Recherche[b-wn0alxgzcb] {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    column-gap: 20px;
+    margin-bottom: 20px;
+}
+
+.PopupAuto__Formulaire__Etapes[b-wn0alxgzcb] {
+    width: 33%;
+    margin-top: 50px;
+}
+
+.PopupAuto__Formulaire__Expiration[b-wn0alxgzcb] {
+    display: flex;
+    flex-direction: column;
+    width: 33%;
+    row-gap: 10px;
+    margin-top: 80px;
+}
+
+.PopupAuto__Formulaire__Expiration__Element[b-wn0alxgzcb] {
+
+}
+
+.PopupAuto__Soumission[b-wn0alxgzcb] {
+    margin-top: 20px;
+}

@@ -1,0 +1,136 @@
+﻿.Page {
+    background-color: #efefef;
+    padding: 20px 40px 20px;
+    height: 100%;
+    height: calc(100vh - 300px);
+}
+
+.Page__Header {
+    width: 100%;
+    border-radius: 5px;
+    margin-bottom: 24px;
+    border: 1px solid var(--gtt-grey);
+    background-color: white;
+}
+
+.Page__Header__Titre {
+    padding: 20px;
+    border-bottom: 1px solid var(--gtt-grey);
+}
+
+.Page__Header__Body {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.Page__Header__Body__Actions {
+    padding: 20px;
+    display: flex;
+    flex-direction: row;
+    column-gap: 20px;
+}
+
+.Page__Header__Formulaire {
+    padding: 20px;
+    display: flex;
+    column-gap: 20px;
+    width: 80%;
+}
+
+.Page__Header__Formulaire__Gauche {
+    display: flex;
+    align-items: center;
+}
+
+.Page__Header__Formulaire__Droite {
+    display: flex;
+    align-items: center;
+}
+
+.Page__Header__Actions {
+    background-color: darkred;
+}
+
+.Page__Tableau {
+    border: 1px solid var(--gtt-grey);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.PopupRemb__Contenu {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 20px 40px;
+}
+
+.PopupRemb__Contenu__Soumission {
+    margin-top: 30px;
+}
+
+.PopupRemb__Contenu__Soumission__Item {
+    width: 100%;
+}
+
+.PopupRemb__Formulaire {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.PopupRemb__Formulaire__Item {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 30px;
+}
+
+.PopupRemb__Formulaire__Item__Verifier {
+    padding: 5px 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--gtt-amber);
+    cursor: pointer;
+    font-weight: bold;
+    color: var(--gtt-black);
+}
+
+.TemplateTitre {
+    padding: 10px;
+}
+
+.TemplateTitre__Nom {
+    font-family: "Open Sans" !important;
+    font-weight: bold !important;
+    font-size: 12px !important;
+    line-height: 14px;
+    margin-bottom: 6px;
+}
+
+.TemplateTitre__Ref {
+    font-family: "Open Sans" !important;
+    font-weight: bold !important;
+    font-size: 16px !important;
+    line-height: 16px;
+    margin-bottom: 6px;
+}
+
+.TemplateTitre__Routing {
+    font-family: "Open Sans" !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+    line-height: 14px;
+    margin-bottom: 6px;
+}
+
+.TemplateTitre__Classe {
+    font-family: "Open Sans" !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+    line-height: 14px;
+}

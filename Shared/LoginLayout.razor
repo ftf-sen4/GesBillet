@@ -1,0 +1,25 @@
+﻿@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+
+<PageTitle>Gestions des Titres de Transport</PageTitle>
+<NavMenu />
+ <main class="LoginMain">
+   @Body
+ </main>
+
+
+
+@code {
+
+    [CascadingParameter] protected Task<AuthenticationState> AuthStat { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+        base.OnInitialized();
+        var user = (await AuthStat).User;
+        if (user.Identity.IsAuthenticated)
+        {
+            NavigationManager.NavigateTo($"");
+        }
+    }
+}

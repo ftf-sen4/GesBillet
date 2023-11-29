@@ -1,0 +1,853 @@
+﻿@page "/saisie-facture"
+@inject ICompagnieService compagnieService
+@inject IAgenceDeVoyageService agenceDeVoyageService
+@inject INotificationUIService notificationUIService
+@inject ISaisieFactureService saisieFactureService
+
+@inject IJSRuntime JS
+@inject IWebHostEnvironment Environment
+
+
+<SfDialog Height="1000px" Width="1200px" ShowCloseIcon IsModal @bind-Visible="SiPopupSaisieVisible">
+	<DialogTemplates>
+		<Header>
+			<div class="PopupFacture__EnTete">
+				<div class="GTT_Titre2">Créer une Facture</div>
+				<div class="GTT_Body16">Remplissez le formulaire pour créer une facture.</div>
+			</div>
+		</Header>
+		<Content>
+			<div class="PopupFacture__Contenu">
+				<div class="PopupFacture__Contenu__Haut">
+					<div class="PopupFacture__Formulaire">
+						<EditForm @ref="CreationFormRef" EditContext="CreationContext" OnSubmit="@SoumettreFormulaireCreation" Model="ModelFacture">
+							<DataAnnotationsValidator />
+							<div class="PopupFacture__Formulaire__Item">
+								<label class="PopupFacture__Formulaire__Item__Label">
+									*Agence de voyage
+								</label>
+								<SfDropDownList TItem="Agencevoyage" TValue="int" Value="@ModelFacture.IDAgenceDeVoyage" PopupHeight="230px" Placeholder="ASKY..." DataSource="@AgencesDeVoyages">
+									<DropDownListFieldSettings Text="Libelleagencevoyage" Value="Idagencevoyage" />
+									<DropDownListEvents TItem="Agencevoyage" TValue="int" ValueChange="RechercherTitresAchoisir"></DropDownListEvents>
+									<DropDownListTemplates TItem="Agencevoyage">
+										<NoRecordsTemplate>
+											<span> Aucune donnée disponible.</span>
+										</NoRecordsTemplate>
+									</DropDownListTemplates>
+								</SfDropDownList>
+								<ValidationMessage For="@(() => ModelFacture.IDAgenceDeVoyage)" />
+							</div>
+							<div class="PopupFacture__Formulaire__Item">
+								<label class="PopupFacture__Formulaire__Item__Label">
+									Référence
+								</label>
+								<SfTextBox Placeholder="Ex 134567..." @bind-Value="ModelFacture.RefFacture"></SfTextBox>
+								<ValidationMessage For="@(() => ModelFacture.RefFacture)" />
+							</div>
+							<div class="PopupFacture__Formulaire__Item">
+								<label class="PopupAvoir__Formulaire__Item__Label">
+									*Date d'émission
+								</label>
+								<SfDatePicker TValue="DateTime" @bind-Value="@ModelFacture.DateEmission"></SfDatePicker>
+								<ValidationMessage For="@(() => ModelFacture.DateEmission)" />
+							</div>
+							<div class="PopupFacture__Formulaire__Item">
+								<label class="PopupFacture__Formulaire__Item__Label">
+									Pièces Jointes
+								</label>
+								<div class="PopupFacture__Formulaire__Item__FileInput" onclick="document.getElementById('ChampPiecesJointes').click();">Ajouter des Pièces Jointes</div>
+								<div>
+									@{
+										foreach (var item in FichiersJoints)
+										{
+											<div class="PopupFacture__Formulaire__Item__File">
+												@item.Name
+											</div>
+										}
+									}
+								</div>
+							</div>
+							<div class="PopupFacture__Formulaire__Item">
+								<label class="PopupFacture__Formulaire__Item__Label">
+									Observation
+								</label>
+								<SfTextBox Multiline=true Placeholder="Entrez une observation ici..." @bind-Value="ModelFacture.Observation"></SfTextBox>
+								<ValidationMessage For="@(() => ModelFacture.Observation)" />
+							</div>
+						</EditForm>
+					</div>
+				</div>
+				<div class="PopupFacture__Contenu__Bas">
+					<SfGrid Height="400" DataSource="@ListeDesTitresDeTransport" AllowTextWrap TValue="AffichageTitreAvecPJ">
+						<GridSelectionSettings CheckboxOnly></GridSelectionSettings>
+						<GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
+						<GridEvents RowSelected="RowSelectHandlerTitre" RowDeselected="@RowDeselectHandlerTitre" TValue="AffichageTitreAvecPJ"></GridEvents>
+						<GridColumns>
+							<GridColumn Type="ColumnType.CheckBox" Width="40"></GridColumn>
+							<GridColumn Field=@nameof(AffichageTitreAvecPJ.RefTitre) HeaderText="REFERENCE" TextAlign="TextAlign.Left" Width="200"></GridColumn>
+							<GridColumn Field=@nameof(AffichageTitreAvecPJ.LibelleClasse) HeaderText="CLASSE" TextAlign="TextAlign.Left" Width="200"></GridColumn>
+							<GridColumn Field=@nameof(AffichageTitreAvecPJ.MontantTitreDeTransport) Format="N0" HeaderText="MONTANT" TextAlign="TextAlign.Left" Width="200"></GridColumn>
+							<GridColumn Field=@nameof(AffichageTitreAvecPJ.ListePiecesJointes) HeaderText="PIECES JOINTES" TextAlign="TextAlign.Left" Width="200">
+								<Template>
+									@{
+										var pieceJointe = context as AffichageTitreAvecPJ;
+										var indexFichier = 1;
+										foreach (var fichier in pieceJointe.ListePiecesJointes)
+										{
+											var nomFichierAfficher = $"{fichier.Nom}";
+											<span @onclick="() => AfficherFichierSurNouvellePage(fichier.CheminAbsolu, nomFichierAfficher)" class="GTT_Body12">@nomFichierAfficher</span>
+											<br />
+											indexFichier++;
+										}
+									}
+								</Template>
+							</GridColumn>
+						</GridColumns>
+						<GridTemplates>
+							<EmptyRecordTemplate Context="contextNoRecord">
+								<EspaceVide />
+							</EmptyRecordTemplate>
+						</GridTemplates>
+					</SfGrid>
+				</div>
+				<div class="PopupFacture__Contenu__Soumission">
+					<button @onclick="SoumettreFormulaireCreation" type="submit" class="GTTbutton GTT_Button_Positive PopupFacture__Contenu__Soumission__Item">
+						Enregistrer
+					</button>
+				</div>
+			</div>
+			<InputFile id="ChampPiecesJointes" accept=".pdf" style="display: none;" multiple OnChange="@ChargerFichiers" />
+		</Content>
+	</DialogTemplates>
+	<DialogEvents OnClose="@EffacerFormulaireCreation" />
+</SfDialog>
+<SfDialog Height="1000px" Width="1200px" ShowCloseIcon IsModal @bind-Visible="SiPopupModificationVisible">
+	<DialogTemplates>
+		<Header>
+			<div class="ModalHeader">
+				<div class="ModalHeader__Title GTT_Titre2">Modifier une Facture</div>
+				<div class="ModalHeader__Subtitle GTT_Body16">Remplissez le formulaire pour modifier la Facture.</div>
+			</div>
+		</Header>
+		<Content>
+			<div class="PopupFacture__Contenu">
+				<div class="PopupFacture__Contenu__Haut">
+					<div class="PopupFacture__Formulaire">
+						@if (!SiModifierFacture)
+						{
+							<div class="PopupFacture__Formulaire__Item">
+								<button @onclick="ActiverModificationFacture" type="submit" class="GTTbutton GTT_Button_Positive">
+									Modifier
+								</button>
+							</div>
+						}
+						<EditForm @ref="ModificationFormRef" EditContext="ModificationContext" OnSubmit="@SoumettreFormulaireCreation" Model="ModelFacture">
+							<DataAnnotationsValidator />
+							<div class="PopupFacture__Formulaire__Item">
+								<label class="PopupFacture__Formulaire__Item__Label">
+									Agence de Voyage
+								</label>
+								<SfDropDownList Readonly="!SiModifierFacture" TItem="Agencevoyage" TValue="int" Value="ModelFacture.IDAgenceDeVoyage" PopupHeight="230px" Placeholder="ASKY..." DataSource="@AgencesDeVoyages">
+									<DropDownListFieldSettings Text="Libelleagencevoyage" Value="Idagencevoyage" />
+									<DropDownListEvents TItem="Agencevoyage" TValue="int" ValueChange="RechercherTitresAchoisirModifier"></DropDownListEvents>
+									<DropDownListTemplates TItem="Agencevoyage">
+										<NoRecordsTemplate>
+											<span> Aucune donnée disponible.</span>
+										</NoRecordsTemplate>
+									</DropDownListTemplates>
+								</SfDropDownList>
+								<ValidationMessage For="@(() => ModelFacture.IDAgenceDeVoyage)" />
+							</div>
+							<div class="PopupFacture__Formulaire__Item">
+								<label class="PopupFacture__Formulaire__Item__Label">
+									Référence
+								</label>
+								<SfTextBox Placeholder="Ex 134567..." @bind-Value="ModelFacture.RefFacture"></SfTextBox>
+								<ValidationMessage For="@(() => ModelFacture.RefFacture)" />
+							</div>
+							<div class="PopupFacture__Formulaire__Item">
+								<label class="PopupAvoir__Formulaire__Item__Label">
+									*Date d'émission
+								</label>
+								<SfDatePicker Readonly="!SiModifierFacture" TValue="DateTime" @bind-Value="@ModelFacture.DateEmission"></SfDatePicker>
+								<ValidationMessage For="@(() => ModelFacture.DateEmission)" />
+							</div>
+							<div class="PopupFacture__Formulaire__Item">
+								<label class="PopupFacture__Formulaire__Item__Label">
+									Pièces Jointes
+								</label>
+								@if (SiModifierFacture)
+								{
+									<div class="PopupFacture__Formulaire__Item__FileInput" onclick="document.getElementById('ChampPiecesJointes').click();">Ajouter des Pièces Jointes</div>
+								}
+								<div>
+									@{
+										foreach (var item in FichiersJoints)
+										{
+											<div class="PopupFacture__Formulaire__Item__File">
+												@item.Name
+											</div>
+										}
+									}
+								</div>
+								<div>
+									@{
+										var indexFichier = 1;
+										foreach (var fichier in ModelFichiersJoints)
+										{
+											var nomFichierAfficher = $"{fichier.Nom}";
+											<div class="GTT_PieceJointe">
+												<img src="/images/pdf.svg" width="48" height="48" />
+												<span class="GTT_PieceJointe__Label">@nomFichierAfficher</span>
+												<div class="GTT_PieceJointe__Actions">
+													<div @onclick="() => AfficherFichierSurNouvellePage(fichier.CheminAbsolu, nomFichierAfficher)" class="GTT_Icon_Button GTT_Icon_Button_Eye">
+														<img src="/images/eye_icon_bouton.svg" width="24" height="24" />
+													</div>
+													@if(SiModifierFacture){
+														<div @onclick="() => OuvrirPopupSuppressionPieceJointe(fichier.Nom)" class="GTT_Icon_Button GTT_Icon_Button_Trash">
+														<img src="/images/trash_icon_bouton.svg" width="24" height="24" />
+													</div>
+													}
+												</div>
+											</div>
+											indexFichier++;
+										}
+									}
+								</div>
+							</div>
+							<div class="PopupFacture__Formulaire__Item">
+								<label class="PopupFacture__Formulaire__Item__Label">
+									Observation
+								</label>
+								<SfTextBox Readonly="!SiModifierFacture" Multiline=true Placeholder="Entrez une observation ici..." @bind-Value="ModelFacture.Observation"></SfTextBox>
+								<ValidationMessage For="@(() => ModelFacture.Observation)" />
+							</div>
+						</EditForm>
+					</div>
+					<div class="PopupFacture__Contenu__Haut__Droite">
+						@{
+							if (SiFactureRenvoi)
+							{
+								<MessageRenvoi NomRenvoyeur="@DetailsRenvoiFacture.NomAgentRenvoi" DateDeRenvoi="@DetailsRenvoiFacture.Daterenvoi" MotifDeRenvoi="@DetailsRenvoiFacture.Motifrenvoi" />
+							}
+						}
+					</div>
+				</div>
+				<div class="PopupFacture__Contenu__Bas">
+					@{
+						if (!SiModifierFacture)
+						{
+							<SfGrid Height="400" AllowTextWrap="true" DataSource="@ListeDesTitresFactureEnCours" TValue="AffichageTitreAvecPJ">
+								<GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
+								<GridColumns>
+									<GridColumn Type="ColumnType.CheckBox" Width="40"></GridColumn>
+									<GridColumn Field=@nameof(AffichageTitreAvecPJ.RefTitre) HeaderText="REFERENCE" TextAlign="TextAlign.Left" Width="200"></GridColumn>
+									<GridColumn Field=@nameof(AffichageTitreAvecPJ.LibelleClasse) HeaderText="CLASSE" TextAlign="TextAlign.Left" Width="200"></GridColumn>
+									<GridColumn Field=@nameof(AffichageTitreAvecPJ.MontantTitreDeTransport) Format="N0" HeaderText="MONTANT" TextAlign="TextAlign.Left" Width="200"></GridColumn>
+									<GridColumn Field=@nameof(AffichageTitreAvecPJ.ListePiecesJointes) HeaderText="PIECES JOINTES" TextAlign="TextAlign.Left" Width="200">
+										<Template>
+											@{
+												var pieceJointe = context as AffichageTitreAvecPJ;
+												var indexFichier = 1;
+												foreach (var fichier in pieceJointe.ListePiecesJointes)
+												{
+													var nomFichierAfficher = $"{fichier.Nom}";
+													<span @onclick="() => AfficherFichierSurNouvellePage(fichier.CheminAbsolu, nomFichierAfficher)" class="GTT_Body12">@nomFichierAfficher</span>
+													<br />
+													indexFichier++;
+												}
+											}
+										</Template>
+									</GridColumn>
+								</GridColumns>
+								<GridTemplates>
+									<EmptyRecordTemplate Context="contextNoRecord">
+										<EspaceVide />
+									</EmptyRecordTemplate>
+								</GridTemplates>
+							</SfGrid>
+						}
+						else
+						{
+							<SfGrid Height="400" DataSource="@ListeDesTitresDeTransport" AllowTextWrap="true" TValue="AffichageTitreAvecPJ">
+								<GridSelectionSettings CheckboxOnly></GridSelectionSettings>
+								<GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
+								<GridEvents RowSelected="RowSelectHandlerTitre" RowDeselected="@RowDeselectHandlerTitre" TValue="AffichageTitreAvecPJ"></GridEvents>
+								<GridColumns>
+									<GridColumn Type="ColumnType.CheckBox" Width="40"></GridColumn>
+									<GridColumn Field=@nameof(AffichageTitreAvecPJ.RefTitre) HeaderText="REFERENCE" TextAlign="TextAlign.Left" Width="200"></GridColumn>
+									<GridColumn Field=@nameof(AffichageTitreAvecPJ.LibelleClasse) HeaderText="CLASSE" TextAlign="TextAlign.Left" Width="200"></GridColumn>
+									<GridColumn Field=@nameof(AffichageTitreAvecPJ.MontantTitreDeTransport) Format="N0" HeaderText="MONTANT" TextAlign="TextAlign.Left" Width="200"></GridColumn>
+									<GridColumn Field=@nameof(AffichageTitreAvecPJ.ListePiecesJointes) HeaderText="PIECES JOINTES" TextAlign="TextAlign.Left" Width="200">
+										<Template>
+											@{
+												var pieceJointe = context as AffichageTitreAvecPJ;
+												var indexFichier = 1;
+												foreach (var fichier in pieceJointe.ListePiecesJointes)
+												{
+													var nomFichierAfficher = $"{fichier.Nom}";
+													<span @onclick="() => AfficherFichierSurNouvellePage(fichier.CheminAbsolu, nomFichierAfficher)" class="GTT_Body12">@nomFichierAfficher</span>
+													<br />
+													indexFichier++;
+												}
+											}
+										</Template>
+									</GridColumn>
+								</GridColumns>
+								<GridTemplates>
+									<EmptyRecordTemplate Context="contextNoRecord">
+										<EspaceVide />
+									</EmptyRecordTemplate>
+								</GridTemplates>
+							</SfGrid>
+						}
+					}
+				</div>
+				<div class="PopupFacture__Contenu__Soumission">
+					@if (SiModifierFacture)
+					{
+						<button @onclick="SoumettreFormulaireModification" type="submit" class="GTTbutton GTT_Button_Positive PopupFacture__Contenu__Soumission__Item">
+							Enregistrer
+						</button>
+					}
+				</div>
+			</div>
+			<InputFile id="ChampPiecesJointes" accept=".pdf" style="display: none;" multiple OnChange="@ChargerFichiers" />
+		</Content>
+	</DialogTemplates>
+	<DialogEvents OnClose="@EffacerFormulaireModification" />
+</SfDialog>
+
+<Modal Titre="Suppression"
+	   Description="Souhaitez-vous supprimer la pièce jointe ?"
+	   SiModalVisible="SiPopupSupressionPJVisible"
+	   OnPositiveClickCallback="@SupprimerPieceJointeFacture"
+	   OnNegativeClickCallback="@AnnulerSupprimerPieceJointeFacture" />
+
+<Modal Titre="Suppression"
+	   Description="Souhaitez-vous supprimer la facture ?"
+	   SiModalVisible="SiPopupSupprimerFactureVisible"
+	   OnPositiveClickCallback="@SupprimerFactureVisible"
+	   OnNegativeClickCallback="@AnnulerSupprimerFactureVisible" />
+
+<Modal Titre="Envoyer pour validation"
+	   Description="Souhaitez-vous envoyer le(s) facture(s) à l'étape supérieure ?"
+	   SiModalVisible="SiPopupEnvoyerFactureVisible"
+	   OnPositiveClickCallback="@EnvoyerFactureEnEtapeSuperieure"
+	   OnNegativeClickCallback="@AnnulerEnvoyerFactureEnEtapeSuperieure" />
+
+
+<div class="Page">
+	<div class="Page__Header">
+		<div class="Page__Header__Titre GTT_Titre3">Saisie de factures</div>
+		<div class="Page__Header__Body">
+			<form class="Page__Header__Formulaire" @onsubmit="RafraichirListeFacture" method="POST">
+				<div style="display: flex;
+								flex-direction: row;
+								align-items: center;
+								column-gap: 20px;
+								">
+					<SfRadioButton @onchange="RafraichirListeFacture" Label="En traitement" Name="Status" Value="EnCours" @bind-Checked="Statut"></SfRadioButton>
+					<SfRadioButton @onchange="RafraichirListeFacture" Label="Validés" Name="Status" Value="Valides" @bind-Checked="Statut"></SfRadioButton>
+					<SfRadioButton @onchange="RafraichirListeFacture" Label="Rejetés" Name="Status" Value="Rejetes" @bind-Checked="Statut"></SfRadioButton>
+				</div>
+				<SfTextBox Width="200px" Placeholder="Rechercher" ID="TermeDeRecherche" @bind-Value="TermeDeRecherche"></SfTextBox>
+				<div style="display: flex; align-items: center; column-gap: 20px;">
+					<div>Du</div>
+					<SfDatePicker Width="140px" TValue="DateTime?" @bind-Value="@DateDebut"></SfDatePicker>
+					<div>Au</div>
+					<SfDatePicker Width="140px" TValue="DateTime?" @bind-Value="@DateFin"></SfDatePicker>
+				</div>
+				<SfButton IsPrimary type="submit">Rafraichir</SfButton>
+			</form>
+			<div class="Page__Header__Body__Actions">
+				<button @onclick="OuvrirPopupCreerFacture" disabled="@SiPopupSaisieVisible" class="GTTbutton GTT_Button_Positive">
+					Nouveau
+				</button>
+				<button @onclick="OuvrirPopupEnvoyerFacture" disabled="@(ListeIDFactureSelectionnes.Count == 0)" class="GTTbutton GTT_Button_Validation">
+					Envoyer
+				</button>
+			</div>
+		</div>
+	</div>
+	<div class="Page__Tableau">
+		<SfGrid DataSource="@ListeDesFactures" TValue="AffichageFacture" RowHeight="60">
+			<GridSelectionSettings CheckboxOnly></GridSelectionSettings>
+			<GridEvents RowSelected="RowSelectHandlerFacture" RowDeselected="@RowDeselectHandlerFacture" TValue="AffichageFacture"></GridEvents>
+			<GridColumns>
+				<GridColumn Type="ColumnType.CheckBox" Width="50"></GridColumn>
+				<GridColumn Field=@nameof(AffichageFacture.IDFacture) HeaderText="N° FACTURE" TextAlign="TextAlign.Left" Width="120"></GridColumn>
+				<GridColumn Field="@nameof(AffichageFacture.DateSaisie)" HeaderText="Date & Heure de saisie" Width="200">
+					<Template>
+						@{
+							var Details = context as AffichageFacture;
+							if (Details.DateSaisie.HasValue)
+							{
+								<div>@(Details.DateSaisie.Value.ToString("dd MMMM yyyy HH:mm"))</div>
+							}
+						}
+					</Template>
+				</GridColumn>
+				<GridColumn Field=@nameof(AffichageFacture.LibelleAgence) HeaderText="AGENCE" TextAlign="TextAlign.Left" Width="120"></GridColumn>
+				<GridColumn Field=@nameof(AffichageFacture.Observation) HeaderText="OBSERVATION" TextAlign="TextAlign.Left" Width="120"></GridColumn>
+				<GridColumn HeaderText="ACTIONS" TextAlign="TextAlign.Left">
+					<Template>
+						@{
+							var Details = (context as AffichageFacture);
+							<div style="display: flex; column-gap: 20px;">
+								<button @onclick="@(()=> RowOuvrirPopupModificationFacture(Details.IDFacture))" class="GTT_Icon_Button GTT_Icon_Button_Pencil">
+									<img src="/images/pencil_icon_bouton.svg" width="24" height="24" />
+								</button>
+								<button @onclick="@(()=> RowOuvrirPopupSuppressionFacture(Details.IDFacture))" class="GTT_Icon_Button GTT_Icon_Button_Trash">
+									<img src="/images/trash_icon_bouton.svg" width="24" height="24" />
+								</button>
+							</div>
+						}
+					</Template>
+				</GridColumn>
+				<GridTemplates>
+					<EmptyRecordTemplate Context="contextNoRecord">
+						<EspaceVide Contenu="Ajoutez un Facture pour voir apparaître des éléments dans la liste." />
+					</EmptyRecordTemplate>
+				</GridTemplates>
+			</GridColumns>
+		</SfGrid>
+	</div>
+</div>
+
+@code {
+	private bool SiPopupSaisieVisible { get; set; } = false;
+	private bool SiPopupModificationVisible { get; set; } = false;
+	private bool SiPopupEnvoyerFactureVisible { get; set; } = false;
+	private bool SiPopupSupprimerFactureVisible { get; set; } = false;
+
+	private bool SiModifierFacture { get; set; } = false;
+
+	private int IDFactureAModifier = 0;
+	private int IDFactureASupprimer = 0;
+
+	private EditContext CreationContext;
+	private EditContext ModificationContext;
+
+	private EditForm? CreationFormRef;
+	private EditForm? ModificationFormRef;
+
+	private int nombreDeFichiersAutorises = 2;
+	private List<Agencevoyage>? AgencesDeVoyages;
+	private CreerFactureModel ModelFacture = new CreerFactureModel();
+	private List<IBrowserFile> FichiersJoints = new List<IBrowserFile>();
+	private List<FichierAfficher> ModelFichiersJoints = new List<FichierAfficher>();
+	private List<AffichageTitreAvecPJ> ListeTitreSelectionnes = new List<AffichageTitreAvecPJ>();
+
+	private bool SiFactureRenvoi = false;
+	private AffichageRenvoi DetailsRenvoiFacture = new AffichageRenvoi();
+
+	private string Statut { get; set; } = "EnCours";
+	private List<int> ListeIDFactureSelectionnes = new List<int>();
+	private string TermeDeRecherche { get; set; } = String.Empty;
+	private DateTime? DateFin { get; set; } = DateTime.Now.AddDays(20);
+	private DateTime? DateDebut { get; set; } = DateTime.Now.AddDays(-20);
+
+	private string NomPjASupprimer = String.Empty;
+	private bool SiPopupSupressionPJVisible = false;
+
+	private List<AffichageFacture> ListeDesFactures = new List<AffichageFacture>();
+	private List<AffichageTitreAvecPJ> ListeDesTitresDeTransport = new List<AffichageTitreAvecPJ>();
+	private List<AffichageTitreAvecPJ> ListeDesTitresFactureEnCours = new List<AffichageTitreAvecPJ>();
+
+	protected async override Task OnInitializedAsync()
+	{
+		AgencesDeVoyages = await agenceDeVoyageService.ObtenirAgencesDeVoyages();
+		await RafraichirListeFacture();
+	}
+
+	private async Task RafraichirListeFacture()
+	{
+		ListeTitreSelectionnes.Clear();
+		ListeIDFactureSelectionnes.Clear();
+
+		ListeDesFactures = await saisieFactureService.ObtenirListeFacture(new SaisieFactureRechercheModel()
+			{
+				DateFin = DateFin,
+				DateDebut = DateDebut,
+				TermeDeRecherche = TermeDeRecherche,
+				EnCours = Statut == "EnCours",
+				Valides = Statut == "Valides",
+				Rejetes = Statut == "Rejetes"
+			});
+	}
+
+	private async void CreerFacture()
+	{
+		try
+		{
+			notificationUIService.MontrerChargement();
+			await saisieFactureService.CreerFacture(FichiersJoints, ModelFacture);
+			notificationUIService.AfficherMessage(new NotificationData()
+				{
+					Message = "Facture Créée avec succès.",
+					TypeMessage = TypeDeNotification.Succes
+				});
+			notificationUIService.CacherChargement();
+			SiPopupSaisieVisible = false;
+			await RafraichirListeFacture();
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			notificationUIService.CacherChargement();
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private async void ModifierFacture()
+	{
+		try
+		{
+			notificationUIService.MontrerChargement();
+			await saisieFactureService.ModifierFacture(IDFactureAModifier, FichiersJoints, ModelFacture);
+			notificationUIService.AfficherMessage(new NotificationData()
+				{
+					Message = "Facture mise à jour avec succès.",
+					TypeMessage = TypeDeNotification.Succes
+				});
+			IDFactureAModifier = 0;
+			notificationUIService.CacherChargement();
+			SiPopupModificationVisible = false;
+			await RafraichirListeFacture();
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			notificationUIService.CacherChargement();
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void EffacerFormulaireModification()
+	{
+		SiModifierFacture = false;
+		ModelFacture = new CreerFactureModel();
+		ListeDesTitresFactureEnCours.Clear();
+
+		ListeTitreSelectionnes.Clear();
+		ListeDesTitresDeTransport.Clear();
+
+		if (FichiersJoints != null)
+		{
+			FichiersJoints.Clear();
+		}
+
+		IDFactureAModifier = 0;
+		ModelFichiersJoints.Clear();
+	}
+
+	private async void RechercherTitresAchoisir(Syncfusion.Blazor.DropDowns.ChangeEventArgs<int, Agencevoyage> args)
+	{
+		try
+		{
+			var IDAgenceVoyage = args.Value;
+			ModelFacture.IDAgenceDeVoyage = args.Value;
+			ListeDesTitresDeTransport = await saisieFactureService.ObtenirTitresAChoisir(IDAgenceVoyage);
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private async void RechercherTitresAchoisirModifier(Syncfusion.Blazor.DropDowns.ChangeEventArgs<int, Agencevoyage> args)
+	{
+		try
+		{
+			var IDAgenceVoyage = args.Value;
+			ModelFacture.IDAgenceDeVoyage = args.Value;
+			ListeDesTitresDeTransport = await saisieFactureService.ObtenirTitresAChoisirModifier(IDAgenceVoyage);
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void OuvrirPopupCreerFacture()
+	{
+		SiPopupSaisieVisible = true;
+	}
+
+	private async void RowOuvrirPopupModificationFacture(int IDFacture)
+	{
+		try
+		{
+			IDFactureAModifier = IDFacture;
+			notificationUIService.MontrerChargement();
+
+			var Resultat = await saisieFactureService.ObtenirDetailsFacture(IDFacture);
+
+			ModelFacture.Observation = Resultat.Observation;
+			ModelFacture.DateEmission = Resultat.DateEmission;
+			ListeDesTitresFactureEnCours = Resultat.ListeTitres;
+			ModelFacture.IDAgenceDeVoyage = Resultat.IDAgenceVoyage;
+			ModelFacture.RefFacture = Resultat.RefFacture;
+
+			ModelFichiersJoints = Resultat.ListePiecesJointes;
+
+			if (Resultat.IDRenvoi != null)
+			{
+				SiFactureRenvoi = true;
+				DetailsRenvoiFacture = await saisieFactureService.ObtenirDetailsRenvoi((int)Resultat.IDRenvoi);
+			}
+
+			notificationUIService.CacherChargement();
+			SiPopupModificationVisible = true;
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void RowOuvrirPopupSuppressionFacture(int IDFacture)
+	{
+		IDFactureASupprimer = IDFacture;
+		SiPopupSupprimerFactureVisible = true;
+	}
+
+	private void OuvrirPopupEnvoyerFacture()
+	{
+		SiPopupEnvoyerFactureVisible = true;
+	}
+
+	private void EffacerFormulaireCreation()
+	{
+		ListeTitreSelectionnes.Clear();
+		ListeDesTitresDeTransport.Clear();
+
+		if (FichiersJoints != null)
+		{
+			FichiersJoints.Clear();
+		}
+
+		ModelFichiersJoints.Clear();
+		ModelFacture = new CreerFactureModel();
+	}
+
+	private async void ActiverModificationFacture()
+	{
+		SiModifierFacture = true;
+		ListeTitreSelectionnes.Clear();
+		ListeDesTitresDeTransport = await saisieFactureService.ObtenirTitresAChoisirModifier(IDFactureAModifier);
+		StateHasChanged();
+	}
+
+	private void SoumettreFormulaireCreation()
+	{
+		if (CreationFormRef.EditContext.Validate())
+		{
+			CreerFacture();
+		}
+	}
+
+	private void SoumettreFormulaireModification()
+	{
+		if (ModificationFormRef.EditContext.Validate())
+		{
+			ModifierFacture();
+		}
+	}
+
+	private async void EnvoyerFactureEnEtapeSuperieure()
+	{
+		try
+		{
+			notificationUIService.MontrerChargement();
+			await saisieFactureService.EnvoyerFactureEtapeSup(ListeIDFactureSelectionnes);
+			notificationUIService.AfficherMessage(new NotificationData()
+				{
+					Message = "Facture(s) envoyée(s) à l'étape supérieure.",
+					TypeMessage = TypeDeNotification.Succes
+				});
+
+			notificationUIService.CacherChargement();
+			SiPopupEnvoyerFactureVisible = false;
+			await RafraichirListeFacture();
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void AnnulerEnvoyerFactureEnEtapeSuperieure()
+	{
+		SiPopupEnvoyerFactureVisible = false;
+	}
+
+	private async void SupprimerPieceJointeFacture(){
+		try {
+			notificationUIService.MontrerChargement();
+			await saisieFactureService.SupprimerPieceJointe(NomPjASupprimer);
+			notificationUIService.AfficherMessage(new NotificationData()
+				{
+					Message = "Pièce jointe supprimée avec Succès",
+					TypeMessage = TypeDeNotification.Succes
+				});
+			
+			notificationUIService.CacherChargement();
+			SiPopupSupressionPJVisible = false;
+			await RafraichirInfoModification();
+			StateHasChanged();
+		}catch(Exception exception){
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void AnnulerSupprimerPieceJointeFacture()
+	{
+		SiPopupSupressionPJVisible = false;
+	}
+
+	private async void SupprimerFactureVisible()
+	{
+		try
+		{
+			notificationUIService.MontrerChargement();
+			await saisieFactureService.SupprimerFacture(IDFactureASupprimer);
+			notificationUIService.AfficherMessage(new NotificationData()
+				{
+					Message = "Facture supprimée avec Succès",
+					TypeMessage = TypeDeNotification.Succes
+				});
+			SiPopupSupprimerFactureVisible = false;
+			IDFactureASupprimer = 0;
+			notificationUIService.CacherChargement();
+			await RafraichirListeFacture();
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			notificationUIService.CacherChargement();
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void AnnulerSupprimerFactureVisible()
+	{
+		SiPopupSupprimerFactureVisible = false;
+	}
+
+	private async void AfficherFichierSurNouvellePage(string CheminAbsoluFichier, string NomFichier)
+	{
+		FileStream StreamFichier = new FileStream(CheminAbsoluFichier, System.IO.FileMode.Open, System.IO.FileAccess.Read);
+		MemoryStream stream = new MemoryStream();
+		StreamFichier.CopyTo(stream);
+		byte[] byteArray = stream.ToArray();
+		await JS.InvokeAsync<object>("openStreamInNewWindow", Convert.ToBase64String(byteArray), NomFichier);
+	}
+
+	private void OuvrirPopupSuppressionPieceJointe(string NomPieceJointe)
+	{
+		NomPjASupprimer = NomPieceJointe;
+		SiPopupSupressionPJVisible = true;
+	}
+
+	private async Task RafraichirInfoModification()
+	{
+		var Resultat = await saisieFactureService.ObtenirDetailsFacture(IDFactureAModifier);
+
+		ModelFacture.Observation = Resultat.Observation;
+		ModelFacture.DateEmission = Resultat.DateEmission;
+		ListeDesTitresFactureEnCours = Resultat.ListeTitres;
+		ModelFacture.IDAgenceDeVoyage = Resultat.IDAgenceVoyage;
+
+		ModelFichiersJoints = Resultat.ListePiecesJointes;
+
+		if (Resultat.IDRenvoi != null)
+		{
+			SiFactureRenvoi = true;
+			DetailsRenvoiFacture = await saisieFactureService.ObtenirDetailsRenvoi((int)Resultat.IDRenvoi);
+		}
+	}
+
+	private void RowSelectHandlerTitre(RowSelectEventArgs<AffichageTitreAvecPJ> args)
+	{
+		if (args.IsInteracted)
+		{
+			ModelFacture.ListeDesIDTitresChoisis.Add(args.Data.IDTitre);
+			ListeTitreSelectionnes.Add(args.Data);
+		}
+		if (args.IsHeaderCheckboxClicked)
+		{
+			ModelFacture.ListeDesIDTitresChoisis.Clear();
+			ModelFacture.ListeDesIDTitresChoisis.AddRange(ListeDesTitresDeTransport.Select(e => e.IDTitre));
+
+			ListeTitreSelectionnes.Clear();
+			ListeTitreSelectionnes.AddRange(ListeDesTitresDeTransport);
+		}
+	}
+
+	private void RowDeselectHandlerTitre(RowDeselectEventArgs<AffichageTitreAvecPJ> args)
+	{
+		if (args.IsInteracted)
+		{
+			ModelFacture.ListeDesIDTitresChoisis.Remove(args.Data.IDTitre);
+			ListeTitreSelectionnes.Remove(args.Data);
+		}
+		if (args.IsHeaderCheckboxClicked)
+		{
+			ListeTitreSelectionnes.Clear();
+			ModelFacture.ListeDesIDTitresChoisis.Clear();
+		}
+	}
+
+	private void RowSelectHandlerFacture(RowSelectEventArgs<AffichageFacture> args)
+	{
+		if (args.IsInteracted)
+		{
+			ListeIDFactureSelectionnes.Add(args.Data.IDFacture);
+		}
+		if (args.IsHeaderCheckboxClicked)
+		{
+			ListeIDFactureSelectionnes.Clear();
+			ListeIDFactureSelectionnes.AddRange(ListeDesFactures.Select(e => e.IDFacture));
+		}
+	}
+
+	private void RowDeselectHandlerFacture(RowDeselectEventArgs<AffichageFacture> args)
+	{
+		if (args.IsInteracted)
+		{
+			ListeIDFactureSelectionnes.Remove(args.Data.IDFacture);
+		}
+		if (args.IsHeaderCheckboxClicked)
+		{
+			ListeIDFactureSelectionnes.Clear();
+		}
+	}
+
+	private void AfficherMessageErreur(Exception exception)
+	{
+		notificationUIService.CacherChargement();
+		notificationUIService.AfficherMessage(new NotificationData()
+			{
+				Message = exception.Message,
+				TypeMessage = TypeDeNotification.Erreur
+			});
+	}
+
+	private void ChargerFichiers(InputFileChangeEventArgs e)
+	{
+		try
+		{
+			FichiersJoints = e.GetMultipleFiles(nombreDeFichiersAutorises).ToList();
+		}
+		catch (Exception exception)
+		{
+			AfficherMessageErreur(exception);
+		}
+	}
+}

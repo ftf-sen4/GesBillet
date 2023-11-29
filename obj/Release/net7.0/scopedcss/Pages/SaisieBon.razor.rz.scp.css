@@ -1,0 +1,118 @@
+.Page[b-bz0w9rqbxw] {
+	background-color: #efefef;
+	padding: 20px 40px 20px;
+	height: calc(100vh - 80px);
+}
+
+.Page__Header[b-bz0w9rqbxw] {
+	width: 100%;
+	border-radius: 5px;
+	margin-bottom: 24px;
+	border: 1px solid var(--gtt-grey);
+	background-color: white;
+}
+
+.Page__Header__Titre[b-bz0w9rqbxw] {
+	padding: 20px;
+	border-bottom: 1px solid var(--gtt-grey);
+}
+
+.Page__Header__Body[b-bz0w9rqbxw] {
+	width: 100%;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+}
+
+.Page__Header__Body__Actions[b-bz0w9rqbxw] {
+	padding: 20px;
+	display: flex;
+	flex-direction: row;
+	column-gap: 20px;
+}
+
+.Page__Header__Formulaire[b-bz0w9rqbxw] {
+	padding: 20px;
+	display: flex;
+	column-gap: 20px;
+	width: 80%;
+}
+
+.Page__Header__Formulaire__Gauche[b-bz0w9rqbxw] {
+	display: flex;
+	align-items: center;
+}
+
+.Page__Header__Formulaire__Droite[b-bz0w9rqbxw] {
+	display: flex;
+	align-items: center;
+}
+
+.Page__Header__Actions[b-bz0w9rqbxw] {
+	background-color: darkred;
+}
+
+.Page__Tableau[b-bz0w9rqbxw] {
+	border: 1px solid var(--gtt-grey);
+	border-radius: 5px;
+	overflow: hidden;
+}
+
+.PopupBon__Contenu[b-bz0w9rqbxw] {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	padding: 30px 50px 20px;
+}
+
+.PopupBon__Contenu__Haut[b-bz0w9rqbxw] {
+	width: 100%;
+	display: flex;
+	flex-direction: row;
+	column-gap: 40px;
+	align-items: flex-start;
+}
+
+.PopupBon__Contenu__Bas[b-bz0w9rqbxw] {
+	width: 100%;
+	display: flex;
+	align-items: flex-start;
+}
+
+.PopupBon__Contenu__Soumission[b-bz0w9rqbxw] {
+	margin-top: 30px;
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	row-gap: 20px;
+}
+
+.PopupBon__Contenu__Soumission__Item[b-bz0w9rqbxw]{
+	width: 100%;
+}
+
+.PopupBon__Formulaire[b-bz0w9rqbxw] {
+	width: calc(50% - 20px);
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+}
+
+.PopupBon__Formulaire__Item[b-bz0w9rqbxw] {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	margin-bottom: 30px;
+}
+
+.PopupBon__Contenu__Haut__Droite[b-bz0w9rqbxw] {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	width: calc(50% - 20px);
+}
+
+.PopupBon__TitreSelection__Item[b-bz0w9rqbxw] {
+	padding: 4px 8px;
+	border: 1px dashed var(--gtt-grey);
+}

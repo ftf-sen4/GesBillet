@@ -1,0 +1,487 @@
+﻿@page "/administration/habilitations-etapes"
+@layout AdministrationLayout
+@inject INotificationUIService notificationUIService
+
+<SfDialog Width="1400" ShowCloseIcon IsModal @bind-Visible="SiPopupSaisieVisible">
+	<DialogTemplates>
+		<Header>
+			<div>
+				<div class="GTT_Titre2">Attribution d'autorisation</div>
+			</div>
+		</Header>
+		<Content>
+			<div class="PopupAuto">
+				<div class="PopupAuto__Formulaire">
+					<div class="PopupAuto__Formulaire__Grille">
+						<label>
+							Rechercher l'Agent
+						</label>
+						<form class="PopupAuto__Formulaire__Grille__Recherche" @onsubmit="RafraichirListeAgents" method="POST">
+							<SfTextBox Width="70%" @bind-Value="TermeDeRechercheAgent"></SfTextBox>
+							<SfButton IsPrimary type="submit">Rafraichir</SfButton>
+						</form>
+						<SfGrid Height="500" TValue="AffichageAgent" DataSource="@ListeAgentsAChoisir">
+							<GridSelectionSettings CheckboxOnly Type="Syncfusion.Blazor.Grids.SelectionType.Single"></GridSelectionSettings>
+							<GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
+							<GridEvents RowSelected="RowSelectHandlerAgent" RowDeselected="@RowDeselectHandlerAgent" TValue="AffichageAgent"></GridEvents>
+							<GridColumns>
+								<GridColumn Type="ColumnType.CheckBox" Width="40">
+									<HeaderTemplate>
+									</HeaderTemplate>
+								</GridColumn>
+								<GridColumn Field="@nameof(AffichageAgent.Nom)" HeaderText="AGENTS" Width="160">
+									<Template>
+										@{
+											var Details = context as AffichageAgent;
+											<div>@Details.Nom</div>
+											<div>@Details.Domaine</div>
+										}
+									</Template>
+								</GridColumn>
+								<GridTemplates>
+									<EmptyRecordTemplate Context="contextNoRecord">
+										<EspaceVide Titre=" " Contenu=" " />
+									</EmptyRecordTemplate>
+								</GridTemplates>
+							</GridColumns>
+						</SfGrid>
+					</div>
+					<div class="PopupAuto__Formulaire__Etapes">
+						<label>
+							Choisissez les étapes
+						</label>
+						<SfGrid Height="500" TValue="AffichageEtape" AllowTextWrap DataSource="@ListeEtapesAChoisir">
+							<GridSelectionSettings CheckboxOnly></GridSelectionSettings>
+							<GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
+							<GridEvents RowSelected="RowSelectHandlerEtape" RowDeselected="@RowDeselectHandlerEtape" TValue="AffichageEtape"></GridEvents>
+							<GridColumns>
+								<GridColumn Type="ColumnType.CheckBox" Width="40">
+									<HeaderTemplate>
+									</HeaderTemplate>
+								</GridColumn>
+								<GridColumn Field="@nameof(AffichageEtape.Libelleetape)" HeaderText="LIBELLE" Width="160"></GridColumn>
+								<GridTemplates>
+									<EmptyRecordTemplate Context="contextNoRecord">
+										<EspaceVide Titre="" Contenu="" />
+									</EmptyRecordTemplate>
+								</GridTemplates>
+							</GridColumns>
+						</SfGrid>
+					</div>
+					<div class="PopupAuto__Formulaire__Expiration">
+						@*	@{
+						foreach (var i in Enumerable.Range(0, ListeEtapeExpiration.Count))
+						{
+						var ii = i;
+
+						<div class="PopupAuto__Formulaire__Expiration__Element">
+						<label>
+						Date expiration : Etape @i
+						</label>
+						<SfDatePicker TValue="DateTime" OnInput="(e) => ChangerValeurExpirationEtape(ii, e)" Value="@ListeEtapeExpiration[ii].Item2"></SfDatePicker>
+						</div>
+
+						}
+						}
+						*@
+						@{
+							foreach (var expiration in ListeEtapeExpiration)
+							{
+								//var ii = i;
+
+								<div class="PopupAuto__Formulaire__Expiration__Element">
+									<label>
+										Date expiration : Etape @expiration.Item1
+									</label>
+									<SfDatePicker TValue="DateTime" OnInput="(e) => ChangerValeurExpirationEtapeTest(expiration.Item1, e)" Value="@expiration.Item2"></SfDatePicker>
+								</div>
+							}
+						}
+					</div>
+				</div>
+				<div class="PopupAuto__Soumission">
+					<SfButton IsPrimary style="width: 100%; margin-top: 20px;">Attribuer</SfButton>
+				</div>
+			</div>
+		</Content>
+	</DialogTemplates>
+	<DialogEvents OnClose="@EffacerFormulaireCreation" />
+</SfDialog>
+
+<SfDialog Width="1400" ShowCloseIcon IsModal @bind-Visible="SiPopupModificationVisible">
+	<DialogTemplates>
+		<Header>
+			<div>
+				<div class="GTT_Titre2">Attribution d'autorisation</div>
+			</div>
+		</Header>
+		<Content>
+			<div class="PopupAuto">
+				<div class="PopupAuto__Formulaire">
+					<div class="PopupAuto__Formulaire__Grille">
+						<SfGrid Height="400" TValue="AffichageAgent" DataSource="@ListeAgentsAChoisir">
+							<GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
+							<GridColumns>
+								<GridColumn Field="@nameof(AffichageAgent.Nom)" HeaderText="AGENTS" Width="160">
+									<Template>
+										@{
+											var Details = context as AffichageAgent;
+											<div>@Details.Nom</div>
+											<div>@Details.Domaine</div>
+										}
+									</Template>
+								</GridColumn>
+								<GridTemplates>
+									<EmptyRecordTemplate Context="contextNoRecord">
+										<EspaceVide Titre=" " Contenu=" " />
+									</EmptyRecordTemplate>
+								</GridTemplates>
+							</GridColumns>
+						</SfGrid>
+					</div>
+					<div class="PopupAuto__Formulaire__Etapes" style="margin: 0; padding: 0;">
+						<label>
+							Choisissez les étapes
+						</label>
+						<SfGrid Height="400" TValue="AffichageEtape" AllowTextWrap DataSource="@ListeEtapesAChoisir">
+							<GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
+							<GridColumns>
+								<GridColumn Field="@nameof(AffichageEtape.Libelleetape)" HeaderText="LIBELLE" Width="160"></GridColumn>
+								<GridTemplates>
+									<EmptyRecordTemplate Context="contextNoRecord">
+										<EspaceVide Titre="" Contenu="" />
+									</EmptyRecordTemplate>
+								</GridTemplates>
+							</GridColumns>
+						</SfGrid>
+					</div>
+					<div class="PopupAuto__Formulaire__Expiration">
+						@{
+							foreach (var expiration in ListeEtapeExpiration)
+							{
+								<div class="PopupAuto__Formulaire__Expiration__Element">
+									<label>
+										Date expiration : Etape @expiration.Item1
+									</label>
+									<SfDatePicker TValue="DateTime" OnInput="(e) => ChangerValeurExpirationEtapeTest(expiration.Item1, e)" Value="@expiration.Item2"></SfDatePicker>
+								</div>
+							}
+						}
+					</div>
+				</div>
+				<div class="PopupAuto__Soumission">
+					<SfButton IsPrimary style="width: 100%; margin-top: 20px;">Attribuer</SfButton>
+				</div>
+			</div>
+		</Content>
+	</DialogTemplates>
+	<DialogEvents OnClose="@EffacerFormulaireModification" />
+</SfDialog>
+
+<div class="Page">
+	<div class="Page__Header">
+		<div class="Page__Header__Titre GTT_Titre3">Gestion des Habilitation d'étapes</div>
+		<div class="Page__Header__Body">
+			<form class="Page__Header__Formulaire" @onsubmit="RafraichirListeAutoEtapes" method="POST">
+				<SfTextBox Width="200px" Placeholder="Rechercher" ID="TermeDeRecherche" @bind-Value="TermeDeRecherche"></SfTextBox>
+				<SfButton IsPrimary type="submit">Rafraichir</SfButton>
+			</form>
+			<div class="Page__Header__Body__Actions">
+				<button @onclick="OuvrirPopupCreerAutoEtape" disabled="@SiPopupSaisieVisible" class="GTTbutton GTT_Button_Positive">
+					Nouvelle Autorisation
+				</button>
+			</div>
+		</div>
+	</div>
+	<div class="Page__Tableau">
+		<SfGrid DataSource="@ListeAutorisationEtapes" TValue="AffichageAutoEtapes" RowHeight="60">
+			<GridColumns>
+				<GridColumn Field=@nameof(AffichageAutoEtapes.IDAutoEtape) HeaderText="ID AUTORISATION" TextAlign="TextAlign.Left" Width="120"></GridColumn>
+				<GridColumn Field=@nameof(AffichageAutoEtapes.NomAgentAutoEtape) HeaderText="NOM AGENT" TextAlign="TextAlign.Left" Width="200"></GridColumn>
+				<GridColumn Field=@nameof(AffichageAutoEtapes.LibelleEtape) HeaderText="LIBELLE ETAPE" TextAlign="TextAlign.Left" Width="200"></GridColumn>
+				<GridColumn Field=@nameof(AffichageAutoEtapes.Dateexpirationautoetape) HeaderText="DATE D'EXPIRATION" TextAlign="TextAlign.Left" Width="200">
+					<Template>
+						@{
+							var Details = context as AffichageAutoEtapes;
+							<div>@(Details.Dateexpirationautoetape.ToString("dd MMMM yyyy HH:mm"))</div>
+						}
+					</Template>
+				</GridColumn>
+				<GridColumn HeaderText="ACTIONS" TextAlign="TextAlign.Left" Width="200">
+					<Template>
+						@{
+							var Details = context as AffichageAutoEtapes;
+							<div style="display: flex; column-gap: 20px;">
+								<button @onclick="@(()=> RowOuvrirPopupModificationHabEtape(Details.IDAutoEtape))" class="GTT_Icon_Button GTT_Icon_Button_Pencil">
+									<img src="/images/pencil_icon_bouton.svg" width="24" height="24" />
+								</button>
+							</div>
+						}
+					</Template>
+				</GridColumn>
+				<GridTemplates>
+					<EmptyRecordTemplate Context="contextNoRecord">
+						<EspaceVide Contenu="Attribuez des étapes aux agents pour voir apparaître des éléments dans la liste." />
+					</EmptyRecordTemplate>
+				</GridTemplates>
+			</GridColumns>
+		</SfGrid>
+	</div>
+</div>
+
+@code {
+	private bool SiPopupSaisieVisible { get; set; } = false;
+	private bool SiPopupModificationVisible { get; set; } = false;
+
+	private int IDHabEtapeAModifier = 0;
+
+	private EditContext CreationContext;
+	private EditContext ModificationContext;
+
+	private EditForm? CreationFormRef;
+	private EditForm? ModificationFormRef;
+
+	private CreerAutoEtapeModel ModelAutoEtape = new CreerAutoEtapeModel();
+
+	private string Statut { get; set; } = "EnCours";
+	private string TermeDeRecherche { get; set; } = String.Empty;
+	private string TermeDeRechercheAgent { get; set; } = String.Empty;
+	private DateTime? DateFin { get; set; } = DateTime.Now.AddDays(20);
+	private DateTime? DateDebut { get; set; } = DateTime.Now.AddDays(-20);
+
+	private List<int> ListeMatAgentSelectionnes = new List<int>();
+	private List<AffichageAgent> ListeAgentsAChoisir = new List<AffichageAgent>();
+	private List<AffichageAutoEtapes> ListeAutorisationEtapes = new List<AffichageAutoEtapes>();
+
+	List<(int, DateTime)> ListeEtapeExpiration = new List<(int, DateTime)>();
+	List<AffichageEtape> ListeEtapesAChoisir = new List<AffichageEtape>();
+
+	protected async override Task OnInitializedAsync()
+	{
+		RafraichirListeAutoEtapes();
+	}
+
+	private void RafraichirListeAutoEtapes()
+	{
+		ListeAutorisationEtapes.Add(new AffichageAutoEtapes()
+			{
+				IDEtape = 1,
+				Dateattributionautoetape = DateTime.Now,
+				Dateexpirationautoetape = DateTime.Now,
+				IDAutoEtape = 1,
+				LibelleEtape = "LIBELLE ETAPE 1",
+				NomAgentAutoEtape = "NOM AGENT ETAPE 1"
+			});
+	}
+
+	private void RafraichirListeEtapes()
+	{
+		ListeEtapesAChoisir.Clear();
+
+		for (var i = 0; i < 10; i++)
+		{
+			ListeEtapesAChoisir.Add(new AffichageEtape()
+				{
+					Idetape = i + 1,
+					Libelleetape = $"Etape {i}",
+					Numeroetape = i + 10
+				});
+		}
+	}
+
+	private void RafraichirListeAgents()
+	{
+		try
+		{
+			ListeAgentsAChoisir.Clear();
+			for (var i = 0; i < 10; i++)
+			{
+				ListeAgentsAChoisir.Add(new AffichageAgent()
+					{
+						Nom = $"NOM AGENT {i}",
+						Departement = "DEPT.",
+						Domaine = "DOMAINE",
+						MatAgent = 10,
+						Poste = $"POSTE {i}"
+					});
+			}
+		}
+		catch (Exception exception)
+		{
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private async void CreerAutoEtape()
+	{
+		try
+		{
+			notificationUIService.MontrerChargement();
+
+			notificationUIService.AfficherMessage(new NotificationData()
+				{
+					Message = "Autorisation d'étape créée avec succès.",
+					TypeMessage = TypeDeNotification.Succes
+				});
+
+			notificationUIService.CacherChargement();
+			RafraichirListeAutoEtapes();
+			SiPopupSaisieVisible = false;
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			notificationUIService.CacherChargement();
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private async void ModifierAutoEtape()
+	{
+		try
+		{
+			notificationUIService.MontrerChargement();
+
+			notificationUIService.AfficherMessage(new NotificationData()
+				{
+					Message = "Autorisation d'étape mise à jour avec succès.",
+					TypeMessage = TypeDeNotification.Succes
+				});
+
+			notificationUIService.CacherChargement();
+			IDHabEtapeAModifier = 0;
+			RafraichirListeAutoEtapes();
+			SiPopupModificationVisible = false;
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			notificationUIService.CacherChargement();
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void EffacerFormulaireModification()
+	{
+		ModelAutoEtape = new CreerAutoEtapeModel();
+		IDHabEtapeAModifier = 0;
+	}
+
+	private void OuvrirPopupCreerAutoEtape()
+	{
+		SiPopupSaisieVisible = true;
+
+		RafraichirListeEtapes();
+
+		RafraichirListeAgents();
+	}
+
+	private async void RowOuvrirPopupModificationHabEtape(int IDAutoEtape)
+	{
+		try
+		{
+			IDHabEtapeAModifier = IDAutoEtape;
+			notificationUIService.MontrerChargement();
+
+			ListeAgentsAChoisir.Clear();
+
+			ListeAgentsAChoisir.Add(new AffichageAgent()
+				{
+					Nom = $"NOM AGENT",
+					Departement = "DEPT.",
+					Domaine = "DOMAINE",
+					MatAgent = 10,
+					Poste = "POSTE"
+				});
+
+			RafraichirListeEtapes();
+
+			notificationUIService.CacherChargement();
+			SiPopupModificationVisible = true;
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void RowSelectHandlerAgent(RowSelectEventArgs<AffichageAgent> args)
+	{
+		if (args.IsInteracted)
+		{
+			ListeMatAgentSelectionnes.Add(args.Data.MatAgent);
+		}
+		if (args.IsHeaderCheckboxClicked)
+		{
+			ListeMatAgentSelectionnes.Clear();
+			ListeMatAgentSelectionnes.AddRange(ListeAgentsAChoisir.Select(age => age.MatAgent));
+		}
+	}
+
+	private void RowDeselectHandlerAgent(RowDeselectEventArgs<AffichageAgent> args)
+	{
+		if (args.IsInteracted)
+		{
+			ListeMatAgentSelectionnes.Remove(args.Data.MatAgent);
+		}
+		if (args.IsHeaderCheckboxClicked)
+		{
+			ListeMatAgentSelectionnes.Clear();
+		}
+	}
+
+	private void RowSelectHandlerEtape(RowSelectEventArgs<AffichageEtape> args)
+	{
+		if (args.IsInteracted)
+		{
+			ListeEtapeExpiration.Add((args.Data.Numeroetape, new DateTime()));
+		}
+	}
+
+	private void RowDeselectHandlerEtape(RowDeselectEventArgs<AffichageEtape> args)
+	{
+		if (args.IsInteracted)
+		{
+			var Index = ListeEtapeExpiration.FindIndex(item => item.Item1 == args.Data.Numeroetape);
+			ListeEtapeExpiration.RemoveAt(Index);
+		}
+	}
+
+
+
+	private void ChangerValeurExpirationEtape(int i, Microsoft.AspNetCore.Components.ChangeEventArgs args)
+	{
+		var Temp = new DateTime();
+		if (DateTime.TryParse(args.Value.ToString(), out DateTime n)) Temp = n;
+		var NouvelleValeur = (ListeEtapeExpiration[i].Item1, Temp);
+		ListeEtapeExpiration[i] = NouvelleValeur;
+	}
+
+	private void ChangerValeurExpirationEtapeTest(int i, Microsoft.AspNetCore.Components.ChangeEventArgs args)
+	{
+		var IndexEtapeExpiExist = ListeEtapeExpiration.FindIndex(item => item.Item1 == i);
+		var Temp = new DateTime();
+		if (DateTime.TryParse(args.Value.ToString(), out DateTime n)) Temp = n;
+		var NouvelleValeur = (ListeEtapeExpiration[IndexEtapeExpiExist].Item1, Temp);
+		ListeEtapeExpiration[IndexEtapeExpiExist] = NouvelleValeur;
+	}
+
+	private void EffacerFormulaireCreation()
+	{
+		ModelAutoEtape = new CreerAutoEtapeModel();
+		ListeAgentsAChoisir.Clear();
+		ListeEtapesAChoisir.Clear();
+		ListeEtapeExpiration.Clear();
+	}
+
+	private void AfficherMessageErreur(Exception exception)
+	{
+		notificationUIService.CacherChargement();
+		notificationUIService.AfficherMessage(new NotificationData()
+			{
+				Message = exception.Message,
+				TypeMessage = TypeDeNotification.Erreur
+			});
+	}
+}

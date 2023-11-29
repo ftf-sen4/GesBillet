@@ -1,0 +1,434 @@
+﻿@page "/validation-bereglement"
+@inject ICompagnieService compagnieService
+@inject IAgenceDeVoyageService agenceDeVoyageService
+@inject INotificationUIService notificationUIService
+@inject IValidationBERService validationBERService
+@inject IJSRuntime JS
+@inject IWebHostEnvironment Environment
+
+<SfDialog Height="1000px" Width="1200px" ShowCloseIcon IsModal @bind-Visible="SiPopupConsultationVisible">
+	<DialogTemplates>
+		<Header>
+			<div class="PopupBER__EnTete">
+				<div class="GTT_Titre2">Consultez les détails du Bon de Règlement</div>
+				<div class="GTT_Body16">Consultez les informations du bon de règlement</div>
+			</div>
+		</Header>
+		<Content>
+			<div class="PopupBER__Contenu">
+				<div class="PopupBER__Contenu__Haut">
+					<div class="PopupBER__Formulaire">
+							<div class="PopupBER__Formulaire__Item">
+								<label class="PopupBER__Formulaire__Item__Label">
+									Agence de voyage
+								</label>
+							<SfDropDownList Readonly TItem="Agencevoyage" TValue="int" Value="@ModelBER.IDAgenceVoyage" PopupHeight="230px" Placeholder="ASKY..." DataSource="@AgencesDeVoyages">
+									<DropDownListFieldSettings Text="Libelleagencevoyage" Value="Idagencevoyage" />
+									<DropDownListTemplates TItem="Agencevoyage">
+										<NoRecordsTemplate>
+											<span> Aucune donnée disponible.</span>
+										</NoRecordsTemplate>
+									</DropDownListTemplates>
+								</SfDropDownList>
+							</div>
+							<div class="PopupBER__Formulaire__Item">
+								<label class="PopupBER__Formulaire__Item__Label">
+									Observation
+								</label>
+								<SfTextBox Readonly Multiline=true Placeholder="Entrez une observation ici..." Value="@ModelBER.Observation"></SfTextBox>
+							</div>
+					</div>
+				</div>
+				<div class="PopupBER__Contenu__Bas">
+					<SfGrid Height="400" DataSource="@ListeDesFacturesDuBEEnCours" AllowTextWrap TValue="AffichageFactureAvecPJ" RowHeight="60">
+						<GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
+						<GridColumns>
+							<GridColumn Field="@nameof(AffichageFactureAvecPJ.DateEmission)" TextAlign="TextAlign.Left" HeaderText="DATE EMISSION" Width="200">
+								<Template>
+									@{
+										var Details = context as AffichageFactureAvecPJ;
+										<div>@(Details.DateEmission.ToString("dd MMMM yyyy"))</div>
+									}
+								</Template>
+							</GridColumn>
+							<GridColumn Field=@nameof(AffichageFactureAvecPJ.ListePiecesJointes) HeaderText="PIECE JOINTES" TextAlign="TextAlign.Left" Width="200">
+								<Template>
+									@{
+										var pieceJointe = context as AffichageFactureAvecPJ;
+										var indexFichier = 1;
+										foreach (var fichier in pieceJointe.ListePiecesJointes)
+										{
+											var nomFichierAfficher = $"{fichier.Nom}";
+											<span @onclick="() => AfficherFichierSurNouvellePage(fichier.CheminAbsolu, nomFichierAfficher)" class="GTT_Body12 GTT__Lien">@nomFichierAfficher</span>
+											<br />
+											indexFichier++;
+										}
+									}
+								</Template>
+							</GridColumn>
+						</GridColumns>
+						<GridTemplates>
+							<EmptyRecordTemplate Context="contextNoRecord">
+								<EspaceVide />
+							</EmptyRecordTemplate>
+						</GridTemplates>
+					</SfGrid>
+				</div>
+				<div class="PopupBER__Contenu__Soumission">
+					@if(Statut != "Valides"){
+						<button @onclick="OuvrirPopupValiderBEREnCours" class="GTTbutton GTT_Button_Positive PopupBER__Contenu__Soumission__Item">
+							Valider
+						</button>
+						<button @onclick="OuvrirPopupRenvoiBEREnCours" class="GTTbutton GTT_Button_Danger PopupBER__Contenu__Soumission__Item">
+							Rejeter
+						</button>
+					}
+				</div>
+			</div>
+		</Content>
+	</DialogTemplates>
+	<DialogEvents OnClose="@EffacerConsulationDetails" />
+</SfDialog>
+
+<SfDialog Width="500" ShowCloseIcon IsModal @bind-Visible="SiPopupRenvoiBERVisible">
+	<DialogTemplates>
+		<Header>
+			<div class="ModalHeader">
+				<div class="ModalHeader__Title GTT_Titre2">Renvoi du BE de Règlement.</div>
+			</div>
+		</Header>
+		<Content>
+			<EditForm Model="ModelDeRenvoi" OnValidSubmit="RenvoyerBER">
+				<DataAnnotationsValidator />
+				<div class="ModalRenvoi__Form">
+					<div class="ModalRenvoi__Form__Item">
+						<label class="ModalRenvoi__Form__Item__Label">
+							Motif de renvoi
+						</label>
+						<SfTextBox Multiline=true Placeholder="Entrez le motif de renvoi ici..." @bind-Value="@ModelDeRenvoi.MotifDeRenvoi"></SfTextBox>
+						<ValidationMessage For="@(() => ModelDeRenvoi.MotifDeRenvoi)" />
+					</div>
+					<button type="submit" class="GTTbutton GTT_Button_Danger">
+						Renvoyer à l'étape précédente.
+					</button>
+				</div>
+			</EditForm>
+		</Content>
+	</DialogTemplates>
+	<DialogEvents OnClose="@EffacerFormulaireRenvoi" />
+</SfDialog>
+
+<Modal Titre="Valider"
+	   Description="Souhaitez-vous valider le BE de règlement ?"
+	   SiModalVisible="SiPopupValiderBERVisible"
+	   OnPositiveClickCallback="@ValiderBEREnCours"
+	   OnNegativeClickCallback="@AnnulerValiderBEREnCours" />
+
+<Modal Titre="Valider"
+	   Description="Souhaitez-vous valider le(s) BE de règlement ?"
+	   SiModalVisible="SiPopupValiderBERMultipleVisible"
+	   OnPositiveClickCallback="@ValiderBERMultiple"
+	   OnNegativeClickCallback="@AnnulerValiderBERMultiple" />
+
+
+<div class="Page">
+	<div class="Page__Header">
+		<div class="Page__Header__Titre GTT_Titre3">Validation des Bordereaux de règlement</div>
+		<div class="Page__Header__Body">
+			<form class="Page__Header__Formulaire" @onsubmit="RafraichirListeBER" method="POST">
+				<div style="display: flex;
+								flex-direction: row;
+								align-items: center;
+								column-gap: 20px;
+								">
+					<SfRadioButton @onchange="RafraichirListeBER" Label="En traitement" Name="Status" Value="EnCours" @bind-Checked="Statut"></SfRadioButton>
+					<SfRadioButton @onchange="RafraichirListeBER" Label="Validés" Name="Status" Value="Valides" @bind-Checked="Statut"></SfRadioButton>
+				</div>
+				<SfTextBox Width="200px" Placeholder="Rechercher" ID="TermeDeRecherche" @bind-Value="TermeDeRecherche"></SfTextBox>
+				<div style="display: flex; align-items: center; column-gap: 20px;">
+					<div>Du</div>
+					<SfDatePicker Width="140px" TValue="DateTime?" @bind-Value="@DateDebut"></SfDatePicker>
+					<div>Au</div>
+					<SfDatePicker Width="140px" TValue="DateTime?" @bind-Value="@DateFin"></SfDatePicker>
+				</div>
+				<SfButton IsPrimary type="submit">Rafraichir</SfButton>
+			</form>
+			<div class="Page__Header__Body__Actions">
+				<button @onclick="OuvrirPopupValidationBERMultiple" disabled="@(ListeIDFactureSelectionnes.Count < 1)" class="GTTbutton GTT_Button_Positive">
+					Valider
+				</button>
+			</div>
+		</div>
+	</div>
+	<div class="Page__Tableau">
+		<SfGrid DataSource="@ListeDesBERs" AllowTextWrap TValue="AffichageBER" RowHeight="60">
+			<GridSelectionSettings CheckboxOnly></GridSelectionSettings>
+			<GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
+			<GridEvents RowSelected="RowSelectHandlerBER" RowDeselected="@RowDeselectHandlerBER" TValue="AffichageBER"></GridEvents>
+			<GridColumns>
+				<GridColumn Type="ColumnType.CheckBox" Width="50"></GridColumn>
+				<GridColumn Field=@nameof(AffichageBER.IDBEReglement) HeaderText="N° BER" TextAlign="TextAlign.Left" Width="120"></GridColumn>
+				<GridColumn Field=@nameof(AffichageBER.LibelleAgenceVoyage) HeaderText="AGENCE" TextAlign="TextAlign.Left" Width="120"></GridColumn>
+				<GridColumn Field="@nameof(AffichageBER.DateSaisie)" HeaderText="DATE ET HEURE SAISIE" Width="200">
+					<Template>
+						@{
+							var Details = context as AffichageBER;
+							if (Details.DateSaisie.HasValue)
+							{
+								<div>@(Details.DateSaisie.Value.ToString("dd MMMM yyyy HH:mm"))</div>
+							}
+						}
+					</Template>
+				</GridColumn>
+				<GridColumn Field=@nameof(AffichageBER.Observation) HeaderText="OBSERVATION" TextAlign="TextAlign.Left" Width="120"></GridColumn>
+				<GridColumn HeaderText="ACTIONS" TextAlign="TextAlign.Left">
+					<Template>
+						@{
+							var Details = (context as AffichageBER);
+							<div style="display: flex; column-gap: 20px;">
+								<button @onclick="@(()=> RowAfficherPopupConsultation(Details.IDBEReglement))" class="GTT_Icon_Button GTT_Icon_Button_Eye">
+									<img src="/images/eye_icon_bouton.svg" width="24" height="24" />
+								</button>
+							</div>
+						}
+					</Template>
+				</GridColumn>
+				<GridTemplates>
+					<EmptyRecordTemplate Context="contextNoRecord">
+						<EspaceVide Contenu="Ajoutez un BER pour voir apparaître des éléments dans la liste." />
+					</EmptyRecordTemplate>
+				</GridTemplates>
+			</GridColumns>
+		</SfGrid>
+	</div>
+</div>
+
+@code {
+	private bool SiPopupConsultationVisible { get; set; } = false;
+	private bool SiPopupRenvoiBERVisible { get; set; } = false;
+	private bool SiPopupValiderBERVisible { get; set; } = false;
+	private bool SiPopupValiderBERMultipleVisible { get; set; } = false;
+
+	private int IDBEREncours = 0;
+
+	private List<Agencevoyage>? AgencesDeVoyages;
+	private CreerFactureModel ModelFacture = new CreerFactureModel();
+	private List<FichierAfficher> ModelFichiersJoints = new List<FichierAfficher>();
+
+	private List<AffichageBER> ListeDesBERs = new List<AffichageBER>();
+	private CreerBEReglementModel ModelBER = new CreerBEReglementModel();
+
+
+	private string Statut { get; set; } = "EnCours";
+	private string TermeDeRecherche { get; set; } = String.Empty;
+	private DateTime? DateFin { get; set; } = DateTime.Now.AddDays(20);
+	private DateTime? DateDebut { get; set; } = DateTime.Now.AddDays(-20);
+
+	private List<int> ListeIDBERSelectionnes = new List<int>();
+	private List<int> ListeIDFactureSelectionnes = new List<int>();
+	private List<AffichageFactureAvecPJ> ListeDesFacturesDuBEEnCours = new List<AffichageFactureAvecPJ>();
+
+	private RenvoiModel ModelDeRenvoi = new RenvoiModel();
+
+	protected async override Task OnInitializedAsync()
+	{
+		AgencesDeVoyages = await agenceDeVoyageService.ObtenirAgencesDeVoyages();
+		await RafraichirListeBER();
+	}
+
+	private async Task RafraichirListeBER()
+	{
+		ListeIDBERSelectionnes.Clear();
+		ListeDesBERs = await validationBERService.ObtenirListeBER(new ValidationBERRechercheModel()
+			{
+				DateFin = DateFin,
+				DateDebut = DateDebut,
+				TermeDeRecherche = TermeDeRecherche,
+				EnCours = Statut == "EnCours",
+				Valides = Statut == "Valides",
+			});
+	}
+
+	private void OuvrirPopupValidationBERMultiple()
+	{
+		SiPopupValiderBERMultipleVisible = true;
+	}
+
+	private void OuvrirPopupValiderBEREnCours()
+	{
+
+		SiPopupValiderBERVisible = true;
+	}
+
+	private void OuvrirPopupRenvoiBEREnCours()
+	{
+		SiPopupRenvoiBERVisible = true;
+	}
+
+	private async void ValiderBEREnCours(){
+		try
+		{
+			notificationUIService.MontrerChargement();
+
+			await validationBERService.ValiderBER(IDBEREncours);
+
+			notificationUIService.AfficherMessage(new NotificationData()
+				{
+					Message = "BE de règlement validé avec succès.",
+					TypeMessage = TypeDeNotification.Succes
+				});
+			notificationUIService.CacherChargement();
+			SiPopupValiderBERVisible = false;
+			SiPopupConsultationVisible = false;
+			IDBEREncours = 0;
+			ListeIDBERSelectionnes.Clear();
+			await RafraichirListeBER();
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void AnnulerValiderBEREnCours()
+	{
+		SiPopupValiderBERVisible = false;
+	}
+
+	private async void  ValiderBERMultiple()
+	{
+		try
+		{
+			notificationUIService.MontrerChargement();
+			await validationBERService.ValiderBER(ListeIDBERSelectionnes);
+
+			notificationUIService.AfficherMessage(new NotificationData()
+				{
+					Message = "BE(s) de règlement validé(s) avec succès.",
+					TypeMessage = TypeDeNotification.Succes
+				});
+			notificationUIService.CacherChargement();
+
+			SiPopupValiderBERMultipleVisible = false;
+			ListeIDBERSelectionnes.Clear();
+			await RafraichirListeBER();
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void AnnulerValiderBERMultiple()
+	{
+		SiPopupValiderBERMultipleVisible = false;
+	}
+
+	private void EffacerConsulationDetails()
+	{
+		ModelFacture = new CreerFactureModel();
+		ListeIDBERSelectionnes.Clear();
+		ModelFichiersJoints.Clear();
+	}
+
+	private void EffacerFormulaireRenvoi()
+	{
+		IDBEREncours = 0;
+		ModelDeRenvoi = new RenvoiModel();
+	}
+
+	private async void RenvoyerBER()
+	{
+		try
+		{
+			notificationUIService.MontrerChargement();
+			await validationBERService.RenvoyerBER(IDBEREncours, ModelDeRenvoi.MotifDeRenvoi);
+			notificationUIService.AfficherMessage(new NotificationData()
+				{
+					Message = "BER Renvoyé avec succès.",
+					TypeMessage = TypeDeNotification.Succes
+				});
+
+			IDBEREncours = 0;
+			SiPopupRenvoiBERVisible= false;
+			SiPopupConsultationVisible= false;
+			notificationUIService.CacherChargement();
+			await RafraichirListeBER();
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			notificationUIService.CacherChargement();
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private async void AfficherFichierSurNouvellePage(string CheminAbsoluFichier, string NomFichier)
+	{
+		FileStream StreamFichier = new FileStream(CheminAbsoluFichier, System.IO.FileMode.Open, System.IO.FileAccess.Read);
+		MemoryStream stream = new MemoryStream();
+		StreamFichier.CopyTo(stream);
+		byte[] byteArray = stream.ToArray();
+		await JS.InvokeAsync<object>("openStreamInNewWindow", Convert.ToBase64String(byteArray), NomFichier);
+	}
+
+	private async void RowAfficherPopupConsultation(int IDBEReglement)
+	{
+		try
+		{
+			IDBEREncours = IDBEReglement;
+			notificationUIService.MontrerChargement();
+
+			var Resultat = await validationBERService.ObtenirDetailsBER(IDBEReglement);
+
+			ModelBER.IDAgenceVoyage = Resultat.IDAgenceVoyage;
+			ModelBER.Observation = Resultat.Observation;
+			ListeDesFacturesDuBEEnCours = Resultat.ListeFacturesLier;
+
+			SiPopupConsultationVisible = true;
+			notificationUIService.CacherChargement();
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void RowSelectHandlerBER(RowSelectEventArgs<AffichageBER> args)
+	{
+		if (args.IsInteracted)
+		{
+			ListeIDBERSelectionnes.Add(args.Data.IDBEReglement);
+		}
+		if (args.IsHeaderCheckboxClicked)
+		{
+			ListeIDBERSelectionnes.Clear();
+			ListeIDBERSelectionnes.AddRange(ListeDesBERs.Select(e => e.IDBEReglement));
+		}
+	}
+
+	private void RowDeselectHandlerBER(RowDeselectEventArgs<AffichageBER> args)
+	{
+		if (args.IsInteracted)
+		{
+			ListeIDBERSelectionnes.Remove(args.Data.IDBEReglement);
+		}
+		if (args.IsHeaderCheckboxClicked)
+		{
+			ListeIDBERSelectionnes.Clear();
+		}
+	}
+
+	private void AfficherMessageErreur(Exception exception)
+	{
+		notificationUIService.CacherChargement();
+		notificationUIService.AfficherMessage(new NotificationData()
+			{
+				Message = exception.Message,
+				TypeMessage = TypeDeNotification.Erreur
+			});
+	}
+}

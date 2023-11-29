@@ -1,0 +1,323 @@
+﻿@page "/administration/classes-de-voyage"
+@layout AdministrationLayout
+@inject INotificationUIService notificationUIService
+@inject IGestionClasseService gestionClasseService
+
+<SfDialog Height="400" Width="600" ShowCloseIcon IsModal @bind-Visible="SiPopupSaisieVisible">
+	<DialogTemplates>
+		<Header>
+			<div class="PopupClasse__EnTete">
+				<div class="GTT_Titre2">Créer une Classe de voyage</div>
+				<div class="GTT_Body16">Remplissez le formulaire pour créer une classe de voyage.</div>
+			</div>
+		</Header>
+		<Content>
+			<div class="PopupClasse__Contenu">
+				<div class="PopupClasse__Formulaire">
+					<EditForm OnSubmit="@CreerClasseVoyage" Model="ModelClasse">
+						<DataAnnotationsValidator />
+						<div class="PopupClasse__Formulaire__Item">
+							<label class="PopupClasse__Formulaire__Item__Label">
+								Libellé Classe
+							</label>
+							<SfTextBox Placeholder="Entrez la classe..." @bind-Value="ModelClasse.LibelleClasse"></SfTextBox>
+							<ValidationMessage For="@(() => ModelClasse.LibelleClasse)" />
+						</div>
+						<button class="GTTbutton GTT_Button_Positive PopupClasse__Formulaire__Submit">
+							Enregistrer
+						</button>
+					</EditForm>
+				</div>
+			</div>
+		</Content>
+	</DialogTemplates>
+	<DialogEvents OnClose="@EffacerFormulaireCreation" />
+</SfDialog>
+<SfDialog Height="400" Width="600" ShowCloseIcon IsModal @bind-Visible="SiPopupModificationVisible">
+	<DialogTemplates>
+		<Header>
+			<div class="PopupClasse__EnTete">
+				<div class="GTT_Titre2">Modifier une Classe</div>
+				<div class="GTT_Body16">Remplissez le formulaire pour modifier une Classe.</div>
+			</div>
+		</Header>
+		<Content>
+			<div class="PopupClasse__Contenu">
+				<div class="PopupClasse__Formulaire">
+					<EditForm OnSubmit="@ModifierClasseVoyage" Model="ModelClasse">
+						<DataAnnotationsValidator />
+						<div class="PopupClasse__Formulaire__Item">
+							<label class="PopupClasse__Formulaire__Item__Label">
+								Libellé Classe
+							</label>
+							<SfTextBox Placeholder="Entrez la classe..." @bind-Value="ModelClasse.LibelleClasse"></SfTextBox>
+							<ValidationMessage For="@(() => ModelClasse.LibelleClasse)" />
+						</div>
+						<button class="GTTbutton GTT_Button_Positive PopupClasse__Formulaire__Submit">
+							Enregistrer
+						</button>
+					</EditForm>
+				</div>
+			</div>
+		</Content>
+	</DialogTemplates>
+	<DialogEvents OnClose="@EffacerFormulaireModification" />
+</SfDialog>
+
+<Modal Titre="Suppression"
+	   Description="Souhaitez-vous supprimer la Classe ?"
+	   SiModalVisible="SiPopupSupprimerClasseVisible"
+	   OnPositiveClickCallback="@SupprimerClasseVisible"
+	   OnNegativeClickCallback="@AnnulerSupprimerClasseVisible" />
+
+<div class="Page">
+	<div class="Page__Header">
+		<div class="Page__Header__Titre GTT_Titre3">Gestion des Classes</div>
+		<div class="Page__Header__Body">
+			<form class="Page__Header__Formulaire" @onsubmit="RafraichirListeClasses" method="POST">
+				<SfTextBox Width="200px" Placeholder="Rechercher" ID="TermeDeRecherche" @bind-Value="TermeDeRecherche"></SfTextBox>
+				<SfButton IsPrimary type="submit">Rafraichir</SfButton>
+			</form>
+			<div class="Page__Header__Body__Actions">
+				<button @onclick="OuvrirPopupCreerClasse" disabled="@SiPopupSaisieVisible" class="GTTbutton GTT_Button_Positive">
+					Nouvelle Classe
+				</button>
+			</div>
+		</div>
+	</div>
+	<div class="Page__Tableau">
+		<SfGrid DataSource="@ListeClasses" TValue="AffichageClasse" RowHeight="60">
+			<GridSelectionSettings CheckboxOnly></GridSelectionSettings>
+			<GridEvents RowSelected="RowSelectHandlerClasse" RowDeselected="@RowDeselectHandlerClasse" TValue="AffichageClasse"></GridEvents>
+			<GridColumns>
+				<GridColumn Type="ColumnType.CheckBox" Width="50"></GridColumn>
+				<GridColumn Field=@nameof(AffichageClasse.Libelleclasse) HeaderText="Libellé de la Classe" TextAlign="TextAlign.Left" Width="200"></GridColumn>
+				<GridColumn Field="@nameof(AffichageClasse.Dateagentenrclasse)" HeaderText="Date & Heure de saisie" Width="200">
+					<Template>
+						@{
+							var Details = context as AffichageClasse;
+							<div>@(Details.Dateagentenrclasse.ToString("dd MMMM yyyy HH:mm"))</div>
+						}
+					</Template>
+				</GridColumn>
+				<GridColumn HeaderText="Actions" TextAlign="TextAlign.Left" Width="200">
+					<Template>
+						@{
+							var Details = (context as AffichageClasse);
+							<div style="display: flex; column-gap: 20px;">
+								<button @onclick="@(()=> RowOuvrirPopupModificationClasse(Details.Idclasse))" class="GTT_Icon_Button GTT_Icon_Button_Pencil">
+									<img src="/images/pencil_icon_bouton.svg" width="24" height="24" />
+								</button>
+								@*<button @onclick="@(()=> RowOuvrirPopupSuppressionClasse(Details.Idclasse))" class="GTT_Icon_Button GTT_Icon_Button_Trash">
+									<img src="/images/trash_icon_bouton.svg" width="24" height="24" />
+								</button>*@
+							</div>
+						}
+					</Template>
+				</GridColumn>
+				<GridTemplates>
+					<EmptyRecordTemplate Context="contextNoRecord">
+						<EspaceVide Contenu="Ajoutez un Facture pour voir apparaître des éléments dans la liste." />
+					</EmptyRecordTemplate>
+				</GridTemplates>
+			</GridColumns>
+		</SfGrid>
+	</div>
+</div>
+
+@code {
+	private bool SiPopupSaisieVisible { get; set; } = false;
+	private bool SiPopupModificationVisible { get; set; } = false;
+	private bool SiPopupSupprimerClasseVisible { get; set; } = false;
+
+	private int IDClasseAModifier = 0;
+	private int IDClasseASupprimer = 0;
+
+	private EditContext CreationContext;
+	private EditContext ModificationContext;
+
+	private EditForm? CreationFormRef;
+	private EditForm? ModificationFormRef;
+
+	private CreerClasseModel ModelClasse = new CreerClasseModel();
+
+	private string Statut { get; set; } = "EnCours";
+	private string TermeDeRecherche { get; set; } = String.Empty;
+
+
+	private List<int> ListeIDClassesVoyage = new List<int>();
+	private List<AffichageClasse> ListeClasses = new List<AffichageClasse>();
+
+	protected async override Task OnInitializedAsync()
+	{
+		await RafraichirListeClasses();
+	}
+
+	private async Task RafraichirListeClasses()
+	{
+		ListeClasses = await gestionClasseService.ObtenirListeClasse(new RechercheClasseModel
+			{
+				TermeDeRecherche = TermeDeRecherche
+			});
+	}
+
+	private async void CreerClasseVoyage()
+	{
+		try
+		{
+			notificationUIService.MontrerChargement();
+
+			await gestionClasseService.CreerClasse(ModelClasse.LibelleClasse);
+
+			notificationUIService.AfficherMessage(new NotificationData()
+				{
+					Message = "Classe créée avec succès.",
+					TypeMessage = TypeDeNotification.Succes
+				});
+			notificationUIService.CacherChargement();
+			SiPopupSaisieVisible = false;
+			await RafraichirListeClasses();
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			notificationUIService.CacherChargement();
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private async void ModifierClasseVoyage()
+	{
+		try
+		{
+			notificationUIService.MontrerChargement();
+
+			await gestionClasseService.ModifierClasse(IDClasseAModifier, ModelClasse.LibelleClasse);
+
+			notificationUIService.AfficherMessage(new NotificationData()
+				{
+					Message = "Classe mise à jour avec succès.",
+					TypeMessage = TypeDeNotification.Succes
+				});
+			IDClasseAModifier = 0;
+			SiPopupModificationVisible = false;
+			notificationUIService.CacherChargement();
+			await RafraichirListeClasses();
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			notificationUIService.CacherChargement();
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void EffacerFormulaireModification()
+	{
+		ModelClasse = new CreerClasseModel();
+		IDClasseAModifier = 0;
+	}
+
+	private void OuvrirPopupCreerClasse()
+	{
+		SiPopupSaisieVisible = true;
+	}
+
+	private async void RowOuvrirPopupModificationClasse(int IDClasse)
+	{
+		try
+		{
+			IDClasseAModifier = IDClasse;
+			notificationUIService.MontrerChargement();
+
+			var Resultat = await gestionClasseService.ObtenirDetailsClasse(IDClasse);
+
+			ModelClasse.LibelleClasse = Resultat.Libelleclasse;
+
+			notificationUIService.CacherChargement();
+			SiPopupModificationVisible = true;
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void RowOuvrirPopupSuppressionClasse(int IDClasse)
+	{
+		IDClasseASupprimer = IDClasse;
+		SiPopupSupprimerClasseVisible = true;
+	}
+
+	private void EffacerFormulaireCreation()
+	{
+		ModelClasse = new CreerClasseModel();
+	}
+
+	private async void SupprimerClasseVisible()
+	{
+		try
+		{
+			notificationUIService.MontrerChargement();
+
+			await gestionClasseService.SupprimerClasse(IDClasseASupprimer);
+
+			notificationUIService.AfficherMessage(new NotificationData()
+				{
+					Message = "Classe supprimée avec Succès",
+					TypeMessage = TypeDeNotification.Succes
+				});
+			SiPopupSupprimerClasseVisible = false;
+			IDClasseASupprimer = 0;
+			notificationUIService.CacherChargement();
+			await RafraichirListeClasses();
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			notificationUIService.CacherChargement();
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void AnnulerSupprimerClasseVisible()
+	{
+		SiPopupSupprimerClasseVisible = false;
+	}
+
+	private void RowSelectHandlerClasse(RowSelectEventArgs<AffichageClasse> args)
+	{
+		if (args.IsInteracted)
+		{
+			ListeIDClassesVoyage.Add(args.Data.Idclasse);
+		}
+		if (args.IsHeaderCheckboxClicked)
+		{
+			ListeIDClassesVoyage.Clear();
+			ListeIDClassesVoyage.AddRange(ListeClasses.Select(e => e.Idclasse));
+		}
+	}
+
+	private void RowDeselectHandlerClasse(RowDeselectEventArgs<AffichageClasse> args)
+	{
+		if (args.IsInteracted)
+		{
+			ListeIDClassesVoyage.Remove(args.Data.Idclasse);
+		}
+		if (args.IsHeaderCheckboxClicked)
+		{
+			ListeIDClassesVoyage.Clear();
+		}
+	}
+
+	private void AfficherMessageErreur(Exception exception)
+	{
+		notificationUIService.CacherChargement();
+		notificationUIService.AfficherMessage(new NotificationData()
+			{
+				Message = exception.Message,
+				TypeMessage = TypeDeNotification.Erreur
+			});
+	}
+}

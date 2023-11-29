@@ -1,0 +1,118 @@
+﻿.Page {
+    background-color: #efefef;
+    padding: 20px 40px 20px;
+    height: 100%;
+    height: calc(100vh - 300px);
+}
+
+.Page__Header {
+    width: 100%;
+    border-radius: 5px;
+    margin-bottom: 24px;
+    border: 1px solid var(--gtt-grey);
+    background-color: white;
+}
+
+.Page__Header__Titre {
+    padding: 20px;
+    border-bottom: 1px solid var(--gtt-grey);
+}
+
+.Page__Header__Body {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.Page__Header__Body__Actions {
+    padding: 20px;
+    display: flex;
+    flex-direction: row;
+    column-gap: 20px;
+}
+
+.Page__Header__Formulaire {
+    padding: 20px;
+    display: flex;
+    column-gap: 20px;
+    width: 80%;
+}
+
+.Page__Header__Formulaire__Gauche {
+    display: flex;
+    align-items: center;
+}
+
+.Page__Header__Formulaire__Droite {
+    display: flex;
+    align-items: center;
+}
+
+.Page__Header__Actions {
+    background-color: darkred;
+}
+
+.Page__Tableau {
+    border: 1px solid var(--gtt-grey);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.PopupCompagnie__Contenu {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 30px 50px 20px;
+}
+
+.PopupCompagnie__Contenu__Haut {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    column-gap: 40px;
+    align-items: flex-start;
+}
+
+.PopupCompagnie__Contenu__Validation {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    row-gap: 20px;
+    align-items: stretch;
+    margin-top: 30px;
+}
+
+
+.PopupCompagnie__Formulaire {
+    width: calc(50% - 20px);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.PopupCompagnie__Formulaire__Item {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 30px;
+}
+
+.PopupCompagnie__Formulaire {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.PopupCompagnie__Formulaire__Item {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.PopupCompagnie__Formulaire__Submit {
+    width: 100%;
+    display: flex;
+    margin-top: 40px;
+}

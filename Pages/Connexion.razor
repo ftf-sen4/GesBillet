@@ -1,0 +1,31 @@
+﻿@page "/connexion"
+@layout LoginLayout
+@attribute [AllowAnonymous]
+@inject NavigationManager NavigationManager
+
+<div class="loginPage">
+	<form class="loginPage__Form" action="/connexion" method="post">
+		<div class="loginPage__Form__Title GTT_Titre1">
+			Connexion
+		</div>
+		<div class="loginPage__Form__SubTitle GTT_Body16">
+			à l’application de gestion des titres de transport.
+		</div>
+		<div class="loginPage__Form__Content">
+			<div class="loginPage__Form__Field">
+				<label for="Identifiant">Identifiant</label>
+				<SfTextBox Autocomplete="AutoComplete.Off" style="width: 100%;" ID="Identifiant" @bind-Value="@Identifiant"></SfTextBox>
+			</div>
+			<div class="loginPage__Form__Field">
+				<label for="MotDePasse">Mot de passe</label>
+				<SfTextBox style="width: 100%;" ID="MotDePasse" @bind-Value="@MotDePasse" Type="InputType.Password"></SfTextBox>
+			</div>
+		</div>
+		<SfButton type="submit" IsPrimary style="width: 100%;margin-top: 40px;">Se connecter</SfButton>
+	</form>
+</div>
+
+@code {
+	private string Identifiant { get; set; } = String.Empty;
+	private string MotDePasse { get; set; } = String.Empty;
+}

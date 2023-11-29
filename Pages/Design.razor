@@ -1,0 +1,85 @@
+﻿@page "/Design"
+
+<OperationsBoite />
+<div class="PageDuDesignSystem">
+	<div style="display: flex; flex-direction: column; row-gap: 20px; align-items: flex-start;">
+		<div style="display: flex; flex-direction: column; row-gap: 20px;">
+			<button onclick="alert('HELLO WORLD');" class="GTTbutton GTT_Button_Danger">
+				Ajouter un Titre de Transport
+			</button>
+			<button onclick="alert('HELLO WORLD');" class="GTTbutton GTT_Button_Positive">
+				Ajouter un Titre de Transport
+			</button>
+			<button onclick="alert('HELLO WORLD');" class="GTTbutton GTT_Button_Neutre">
+				Ajouter un Titre de Transport
+			</button>
+			<button onclick="alert('HELLO WORLD');" class="GTTbutton GTT_Button_Validation">
+				Ajouter un Titre de Transport
+			</button>
+		</div>
+		<div class="GTT_Modal">
+			<div class="GTT_Modal__Fermer"></div>
+			<div class="GTT_Modal__Titre">Suppression</div>
+			<div class="GTT_Modal__Message">
+				Souhaitez vous continuez l'action ? Parce que vraiment j'en ai marre de m'afficher 😁'
+			</div>
+			<div class="GTT_Modal__Actions">
+				<button onclick="alert('HELLO WORLD');" class="GTT_Modal__Bouton GTT_Modal__Bouton_Non">
+					Annuler
+				</button>
+				<button onclick="alert('HELLO WORLD');" class="GTT_Modal__Bouton GTT_Modal__Bouton_Oui">
+					Continuer
+				</button>
+			</div>
+		</div>
+		<div style="display: flex; column-gap: 20px;">
+			<button disabled onclick="alert('HELLO WORLD');" class="GTT_Icon_Button GTT_Icon_Button_Eye">
+				<img src="/images/eye_icon_bouton.svg" width="24" height="24" />
+			</button>
+			<button onclick="alert('HELLO WORLD');" class="GTT_Icon_Button GTT_Icon_Button_Pencil">
+				<img src="/images/pencil_icon_bouton.svg" width="24" height="24" />
+			</button>
+			<button onclick="alert('HELLO WORLD');" class="GTT_Icon_Button GTT_Icon_Button_Trash">
+				<img src="/images/trash_icon_bouton.svg" width="24" height="24" />
+			</button>
+			<button onclick="alert('HELLO WORLD');" class="GTT_Icon_Button GTT_Icon_Button_Print">
+				<img src="/images/print_icon_bouton.svg" width="24" height="24" />
+			</button>
+		</div>
+		<div class="GTT_PieceJointe">
+			<img src="/images/pdf.svg" width="48" height="48" />
+			<span class="GTT_PieceJointe__Label">Fichier 3</span>
+			<div class="GTT_PieceJointe__Actions">
+				<button onclick="alert('HELLO WORLD');" class="GTT_Icon_Button GTT_Icon_Button_Eye">
+					<img src="/images/eye_icon_bouton.svg" width="24" height="24" />
+				</button>
+				<button onclick="alert('HELLO WORLD');" class="GTT_Icon_Button GTT_Icon_Button_Trash">
+					<img src="/images/trash_icon_bouton.svg" width="24" height="24" />
+				</button>
+			</div>
+		</div>
+		<div>
+			<div class="GTT_Espace_Vide">
+				<h3 class="GTT_Espace_Vide__Titre GTT_Titre1">
+					Aucun enregistrement pour la rangée de date sélectionnée.
+				</h3>
+				<p class="GTT_Espace_Vide__Message GTT_Body16">
+					Ajoutez un titre de transport pour voir apparaître des éléments dans la liste.
+				</p>
+			</div>
+		</div>
+	</div>
+</div>
+
+<style>
+	.PageDuDesignSystem {
+		width: 100%;
+		height: 1000vh;
+		display: flex;
+		flex-direction: row;
+		background: #efefef;
+		align-items: stretch;
+		justify-content: space-between;
+		padding: 20px 20px 0 20px;
+	}
+</style>

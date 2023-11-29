@@ -1,0 +1,105 @@
+﻿{
+   "CodeGenerationMode": 3,
+   "ContextClassName": "TitreDeTransportContext",
+   "ContextNamespace": null,
+   "DefaultDacpacSchema": null,
+   "FilterSchemas": false,
+   "IncludeConnectionString": false,
+   "ModelNamespace": null,
+   "OutputContextPath": null,
+   "OutputPath": "TitreDeTransportModelsEF",
+   "PreserveCasingWithRegex": true,
+   "ProjectRootNamespace": "Gestions_des_Titres_de_Transport",
+   "Schemas": null,
+   "SelectedHandlebarsLanguage": 2,
+   "SelectedToBeGenerated": 0,
+   "T4TemplatePath": null,
+   "Tables": [
+      {
+         "Name": "[dbo].[AGENCEVOYAGE]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AUTORISATIONETAPE]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AUTORISATIONROLE]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AVOIR]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[BEAVOIR]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[BEREGLEMENT]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[BONDEPASSAGE]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CLASSEVOYAGE]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[COMPAGNIE]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ETAPE]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[FACTURE]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[PIECEJOINTE]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[REMBOURSEMENT]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[RENVOI]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ROLEUTILISATEUR]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[TITREDETRANSPORT]",
+         "ObjectType": 0
+      }
+   ],
+   "UiHint": "l-dpakakpo.TitreDeTransport.dbo",
+   "UncountableWords": null,
+   "UseBoolPropertiesWithoutDefaultSql": false,
+   "UseDatabaseNames": false,
+   "UseDateOnlyTimeOnly": false,
+   "UseDbContextSplitting": false,
+   "UseDecimalDataAnnotationForSprocResult": true,
+   "UseFluentApiOnly": true,
+   "UseHandleBars": false,
+   "UseHierarchyId": false,
+   "UseInflector": false,
+   "UseLegacyPluralizer": false,
+   "UseManyToManyEntity": false,
+   "UseNoDefaultConstructor": false,
+   "UseNoNavigations": false,
+   "UseNoObjectFilter": false,
+   "UseNodaTime": false,
+   "UseNullableReferences": false,
+   "UseSchemaFolders": false,
+   "UseSchemaNamespaces": false,
+   "UseSpatial": false,
+   "UseT4": false
+}

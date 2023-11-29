@@ -1,0 +1,16 @@
+﻿<div class="GTT_Espace_Vide">
+    <h3 class="GTT_Espace_Vide__Titre GTT_Titre2">
+       @Titre
+    </h3>
+    <p class="GTT_Espace_Vide__Message GTT_Body16">
+        @Contenu
+    </p>
+</div>
+
+@code {
+    [Parameter]
+    public string Titre { get; set; } = "Aucun enregistrement pour la rangée de date sélectionnée.";
+
+    [Parameter]
+    public string Contenu { get; set; } = "Ajoutez un titre de transport pour voir apparaître des éléments dans la liste.";
+}

@@ -1,0 +1,363 @@
+﻿@page "/validation-beavoir"
+@inject ICompagnieService compagnieService
+@inject IAgenceDeVoyageService agenceDeVoyageService
+@inject INotificationUIService notificationUIService
+
+@inject IJSRuntime JS
+@inject IWebHostEnvironment Environment
+
+
+<SfDialog Height="1000px" Width="1200px" ShowCloseIcon IsModal @bind-Visible="SiPopupConsultationVisible">
+	<DialogTemplates>
+		<Header>
+			<div class="PopupBEA__EnTete">
+				<div class="GTT_Titre2">Consultez un Bordereau d'envoi pour avoir</div>
+				<div class="GTT_Body16">Vérifiez les informations du bordereau d'envoi de l'Avoir.</div>
+			</div>
+		</Header>
+		<Content>
+			<div class="PopupBEA__Contenu">
+				<div class="PopupBEA__Contenu__Haut">
+					<div class="PopupBEA__Formulaire">
+						<div class="PopupBEA__Formulaire__Item">
+							<label class="PopupBEA__Formulaire__Item__Label">
+								*Agence de voyage
+							</label>
+							<SfDropDownList Readonly TItem="Agencevoyage" TValue="int" Value="@ModelBEA.IDAgenceVoyage" PopupHeight="230px" Placeholder="ASKY..." DataSource="@AgencesDeVoyages">
+								<DropDownListFieldSettings Text="Libelleagencevoyage" Value="Idagencevoyage" />
+								<DropDownListEvents TItem="Agencevoyage" TValue="int"></DropDownListEvents>
+								<DropDownListTemplates TItem="Agencevoyage">
+									<NoRecordsTemplate>
+										<span> Aucune donnée disponible.</span>
+									</NoRecordsTemplate>
+								</DropDownListTemplates>
+							</SfDropDownList>
+						</div>
+						<div class="PopupBEA__Formulaire__Item">
+							<label class="PopupBEA__Formulaire__Item__Label">
+								Observation
+							</label>
+							<SfTextBox Readonly Multiline=true Placeholder="Entrez une observation ici..." Value="@ModelBEA.Observation"></SfTextBox>
+						</div>
+					</div>
+				</div>
+				<div class="PopupBEA__Contenu__Bas">
+					<SfGrid Height="400" DataSource="@ListeDesAvoirsDuBEEnCours" AllowTextWrap TValue="AffichageAvoirAvecPJ" RowHeight="60">
+						<GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
+						<GridColumns>
+							<GridColumn Field=@nameof(AffichageAvoirAvecPJ.ListePiecesJointes) HeaderText="Pièce Jointes" TextAlign="TextAlign.Left" Width="160">
+								<Template>
+									@{
+										var pieceJointe = context as AffichageAvoirAvecPJ;
+										var indexFichier = 1;
+										foreach (var fichier in pieceJointe.ListePiecesJointes)
+										{
+											var nomFichierAfficher = $"{fichier.Nom}";
+											<span @onclick="() => AfficherFichierSurNouvellePage(fichier.CheminAbsolu, nomFichierAfficher)" class="GTT_Body12">@nomFichierAfficher</span>
+											<br />
+											indexFichier++;
+										}
+									}
+								</Template>
+							</GridColumn>
+						</GridColumns>
+						<GridTemplates>
+							<EmptyRecordTemplate Context="contextNoRecord">
+								<EspaceVide Titre="Aucun avoir trouvé." Contenu="Ajoutez un avoir pour voir apparaître des éléments dans la liste" />
+							</EmptyRecordTemplate>
+						</GridTemplates>
+					</SfGrid>
+				</div>
+				<div class="PopupBEA__Contenu__Soumission">
+					<button @onclick="OuvrirPopupValiderBEAEnCours" class="GTTbutton GTT_Button_Positive PopupBEA__Contenu__Soumission__Item">
+						Valider
+					</button>
+					<button @onclick="OuvrirPopupRenvoiBEAEnCours" class="GTTbutton GTT_Button_Danger PopupBEA__Contenu__Soumission__Item">
+						Rejeter
+					</button>
+				</div>
+			</div>
+		</Content>
+	</DialogTemplates>
+	<DialogEvents OnClose="@EffacerConsultation" />
+</SfDialog>
+
+<SfDialog Width="500" ShowCloseIcon IsModal @bind-Visible="SiPopupRenvoiBEAVisible">
+	<DialogTemplates>
+		<Header>
+			<div class="ModalHeader">
+				<div class="ModalHeader__Title GTT_Titre2">Renvoi du BE d'avoir.</div>
+			</div>
+		</Header>
+		<Content>
+			<EditForm Model="ModelDeRenvoi" OnValidSubmit="RenvoyerBEAvoir">
+				<DataAnnotationsValidator />
+				<div class="ModalRenvoi__Form">
+					<div class="ModalRenvoi__Form__Item">
+						<label class="ModalRenvoi__Form__Item__Label">
+							Motif de renvoi
+						</label>
+						<SfTextBox Multiline=true Placeholder="Entrez le motif de renvoi ici..." @bind-Value="@ModelDeRenvoi.MotifDeRenvoi"></SfTextBox>
+						<ValidationMessage For="@(() => ModelDeRenvoi.MotifDeRenvoi)" />
+					</div>
+					<button type="submit" class="GTTbutton GTT_Button_Danger">
+						Renvoyer à l'étape précédente.
+					</button>
+				</div>
+			</EditForm>
+		</Content>
+	</DialogTemplates>
+	<DialogEvents OnClose="@EffacerFormulaireRenvoi" />
+</SfDialog>
+
+
+<Modal Titre="Valider"
+	   Description="Souhaitez-vous valider le BE de règlement ?"
+	   SiModalVisible="SiPopupValiderBEAVisible"
+	   OnPositiveClickCallback="@ValiderBEAvoir"
+	   OnNegativeClickCallback="@AnnulerValiderBEAvoir" />
+
+<Modal Titre="Valider"
+	   Description="Souhaitez-vous valider le(s) BE de règlement ?"
+	   SiModalVisible="SiPopupValiderBEAMultipleVisible"
+	   OnPositiveClickCallback="@ValiderBEAvoirMultiple"
+	   OnNegativeClickCallback="@AnnulerValiderBEAvoirMultiple" />
+
+
+<div class="Page">
+	<div class="Page__Header">
+		<div class="Page__Header__Titre GTT_Titre3">Validation des BE d'avoir</div>
+		<div class="Page__Header__Body">
+			<form class="Page__Header__Formulaire" @onsubmit="RafraichirListeBEA" method="POST">
+				<div style="display: flex;
+							flex-direction: row;
+							align-items: center;
+							column-gap: 20px;
+								">
+					<SfRadioButton @onchange="RafraichirListeBEA" Label="En traitement" Name="Status" Value="EnCours" @bind-Checked="Statut"></SfRadioButton>
+					<SfRadioButton @onchange="RafraichirListeBEA" Label="Validés" Name="Status" Value="Valides" @bind-Checked="Statut"></SfRadioButton>
+				</div>
+				<SfTextBox Width="200px" Placeholder="Rechercher" ID="TermeDeRecherche" @bind-Value="TermeDeRecherche"></SfTextBox>
+				<div style="display: flex; align-items: center; column-gap: 20px;">
+					<div>Du</div>
+					<SfDatePicker Width="140px" TValue="DateTime?" @bind-Value="@DateDebut"></SfDatePicker>
+					<div>Au</div>
+					<SfDatePicker Width="140px" TValue="DateTime?" @bind-Value="@DateFin"></SfDatePicker>
+				</div>
+				<SfButton IsPrimary type="submit">Rafraichir</SfButton>
+			</form>
+			<div class="Page__Header__Body__Actions">
+				<button @onclick="OuvrirPopupValider" disabled="@(ListeIDBEASelectionnes.Count == 0)" class="GTTbutton GTT_Button_Validation">
+					Valider
+				</button>
+			</div>
+		</div>
+	</div>
+	<div class="Page__Tableau">
+		<SfGrid DataSource="@ListeDesBEAs" TValue="AffichageBEA" RowHeight="60">
+			<GridSelectionSettings CheckboxOnly></GridSelectionSettings>
+			<GridEvents RowSelected="RowSelectHandlerBEA" RowDeselected="@RowDeselectHandlerBEA" TValue="AffichageBEA"></GridEvents>
+			<GridColumns>
+				<GridColumn Type="ColumnType.CheckBox" Width="50"></GridColumn>
+				<GridColumn Field=@nameof(AffichageBEA.IDBEAvoir) HeaderText="N° BEA" TextAlign="TextAlign.Left" Width="120"></GridColumn>
+				<GridColumn Field="@nameof(AffichageBEA.DateSaisie)" HeaderText="Date & Heure de saisie" Width="200">
+					<Template>
+						@{
+							var Details = context as AffichageBEA;
+							if (Details.DateSaisie.HasValue)
+							{
+								<div>@(Details.DateSaisie.Value.ToString("dd MMMM yyyy HH:mm"))</div>
+							}
+						}
+					</Template>
+				</GridColumn>
+				<GridColumn Field=@nameof(AffichageBEA.Observation) HeaderText="Observation" TextAlign="TextAlign.Left" Width="120"></GridColumn>
+				<GridColumn HeaderText="Actions" TextAlign="TextAlign.Left">
+					<Template>
+						@{
+							var Details = (context as AffichageBEA);
+							<div style="display: flex; column-gap: 20px;">
+								<button @onclick="@(()=> RowAfficherPopupConsultation(Details.IDBEAvoir))" class="GTT_Icon_Button GTT_Icon_Button_Eye">
+									<img src="/images/eye_icon_bouton.svg" width="24" height="24" />
+								</button>
+							</div>
+						}
+					</Template>
+				</GridColumn>
+				<GridTemplates>
+					<EmptyRecordTemplate Context="contextNoRecord">
+						<EspaceVide Contenu="Ajoutez un BEA pour voir apparaître des éléments dans la liste." />
+					</EmptyRecordTemplate>
+				</GridTemplates>
+			</GridColumns>
+		</SfGrid>
+	</div>
+</div>
+
+@code {
+	private bool SiPopupValiderBEAVisible { get; set; } = false;
+	private bool SiPopupConsultationVisible { get; set; } = false;
+	private bool SiPopupValiderBEAMultipleVisible { get; set; } = false;
+	private bool SiPopupRenvoiBEAVisible { get; set; } = false;
+
+	private RenvoiModel ModelDeRenvoi = new RenvoiModel();
+
+	private List<Agencevoyage>? AgencesDeVoyages;
+	private CreerBEAvoirModel ModelBEA = new CreerBEAvoirModel();
+
+	private string Statut { get; set; } = "EnCours";
+	private string TermeDeRecherche { get; set; } = String.Empty;
+	private DateTime? DateFin { get; set; } = DateTime.Now.AddDays(20);
+	private DateTime? DateDebut { get; set; } = DateTime.Now.AddDays(-20);
+
+
+	private List<int> ListeIDBEASelectionnes = new List<int>();
+	private List<AffichageBEA> ListeDesBEAs = new List<AffichageBEA>();
+	private List<AffichageAvoirAvecPJ> ListeDesAvoirsAChoisir = new List<AffichageAvoirAvecPJ>();
+	private List<AffichageAvoirAvecPJ> ListeDesAvoirsDuBEEnCours = new List<AffichageAvoirAvecPJ>();
+
+	protected async override Task OnInitializedAsync()
+	{
+		AgencesDeVoyages = await agenceDeVoyageService.ObtenirAgencesDeVoyages();
+		await RafraichirListeBEA();
+	}
+
+	private async Task RafraichirListeBEA()
+	{
+		ListeIDBEASelectionnes.Clear();
+
+		ListeDesBEAs.Add(new AffichageBEA
+			{
+				DateSaisie = DateTime.Today,
+				DateValidation = DateTime.Now,
+				IDBEAvoir = 1,
+				IDEtape = 1,
+				IDRenvoi = 1,
+				Observation = "boooo"
+			});
+
+		ListeDesBEAs.Add(new AffichageBEA
+			{
+				DateSaisie = DateTime.Today,
+				DateValidation = DateTime.Now,
+				IDBEAvoir = 2,
+				IDEtape = 1,
+				IDRenvoi = 1,
+				Observation = "boooo"
+			});
+
+		ListeDesBEAs.Add(new AffichageBEA
+			{
+				DateSaisie = DateTime.Today,
+				DateValidation = DateTime.Now,
+				IDBEAvoir = 3,
+				IDEtape = 1,
+				IDRenvoi = 1,
+				Observation = "boooo"
+			});
+	}
+
+	private void RowAfficherPopupConsultation(int IDBEAvoir)
+	{
+		SiPopupConsultationVisible = true;
+	}
+
+	private void EffacerConsultation()
+	{
+		ModelBEA = new CreerBEAvoirModel();
+	}
+
+	private async void AfficherFichierSurNouvellePage(string CheminAbsoluFichier, string NomFichier)
+	{
+		FileStream StreamFichier = new FileStream(CheminAbsoluFichier, System.IO.FileMode.Open, System.IO.FileAccess.Read);
+		MemoryStream stream = new MemoryStream();
+		StreamFichier.CopyTo(stream);
+		byte[] byteArray = stream.ToArray();
+		await JS.InvokeAsync
+		<object>
+			("openStreamInNewWindow", Convert.ToBase64String(byteArray), NomFichier);
+	}
+	private void EffacerFormulaireRenvoi()
+	{
+		ModelDeRenvoi = new RenvoiModel();
+	}
+
+	private void RenvoyerBEAvoir()
+	{
+		SiPopupRenvoiBEAVisible = false;
+		SiPopupConsultationVisible = false;
+	}
+
+	private void OuvrirPopupValider()
+	{
+		SiPopupValiderBEAVisible = true;
+	}
+
+	private void ValiderBEAvoir()
+	{
+		SiPopupValiderBEAVisible = false;
+		SiPopupConsultationVisible = false;
+	}
+
+	private void AnnulerValiderBEAvoir()
+	{
+		SiPopupValiderBEAVisible = false;
+	}
+
+	private void ValiderBEAvoirMultiple()
+	{
+		SiPopupValiderBEAMultipleVisible = false;
+	}
+
+	private void AnnulerValiderBEAvoirMultiple()
+	{
+		SiPopupValiderBEAMultipleVisible = false;
+	}
+
+	private void OuvrirPopupValiderBEAEnCours()
+	{
+		SiPopupValiderBEAVisible = true;
+	}
+
+	private void OuvrirPopupRenvoiBEAEnCours()
+	{
+		SiPopupRenvoiBEAVisible = true;
+	}
+
+	private void RowSelectHandlerBEA(RowSelectEventArgs<AffichageBEA>
+		args)
+	{
+		if (args.IsInteracted)
+		{
+			ListeIDBEASelectionnes.Add(args.Data.IDBEAvoir);
+		}
+		if (args.IsHeaderCheckboxClicked)
+		{
+			ListeIDBEASelectionnes.Clear();
+			ListeIDBEASelectionnes.AddRange(ListeDesBEAs.Select(e => e.IDBEAvoir));
+		}
+	}
+
+	private void RowDeselectHandlerBEA(RowDeselectEventArgs<AffichageBEA>
+		args)
+	{
+		if (args.IsInteracted)
+		{
+			ListeIDBEASelectionnes.Remove(args.Data.IDBEAvoir);
+		}
+		if (args.IsHeaderCheckboxClicked)
+		{
+			ListeIDBEASelectionnes.Clear();
+		}
+	}
+
+	private void AfficherMessageErreur(Exception exception)
+	{
+		notificationUIService.CacherChargement();
+		notificationUIService.AfficherMessage(new NotificationData()
+			{
+				Message = exception.Message,
+				TypeMessage = TypeDeNotification.Erreur
+			});
+	}
+}

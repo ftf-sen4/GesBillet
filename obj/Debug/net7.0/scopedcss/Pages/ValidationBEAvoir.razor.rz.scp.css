@@ -1,0 +1,142 @@
+.Page[b-dnumx366b6] {
+    background-color: #efefef;
+    padding: 20px 40px 20px;
+    height: 100%;
+    height: calc(100vh - 300px);
+}
+
+.Page__Header[b-dnumx366b6] {
+    width: 100%;
+    border-radius: 5px;
+    margin-bottom: 24px;
+    border: 1px solid var(--gtt-grey);
+    background-color: white;
+}
+
+.Page__Header__Titre[b-dnumx366b6] {
+    padding: 20px;
+    border-bottom: 1px solid var(--gtt-grey);
+}
+
+.Page__Header__Body[b-dnumx366b6] {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.Page__Header__Body__Actions[b-dnumx366b6] {
+    padding: 20px;
+    display: flex;
+    flex-direction: row;
+    column-gap: 20px;
+}
+
+.Page__Header__Formulaire[b-dnumx366b6] {
+    padding: 20px;
+    display: flex;
+    column-gap: 20px;
+    width: 80%;
+}
+
+.Page__Header__Formulaire__Gauche[b-dnumx366b6] {
+    display: flex;
+    align-items: center;
+}
+
+.Page__Header__Formulaire__Droite[b-dnumx366b6] {
+    display: flex;
+    align-items: center;
+}
+
+.Page__Header__Actions[b-dnumx366b6] {
+    background-color: darkred;
+}
+
+.Page__Tableau[b-dnumx366b6] {
+    border: 1px solid var(--gtt-grey);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.PopupBEA__Contenu[b-dnumx366b6] {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 30px 50px 20px;
+}
+
+.PopupBEA__Contenu__Haut[b-dnumx366b6] {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    column-gap: 40px;
+    align-items: flex-start;
+}
+
+.PopupBEA__Contenu__Soumission[b-dnumx366b6] {
+    margin-top: 30px;
+}
+
+.PopupBEA__Contenu__Soumission__Item[b-dnumx366b6] {
+    width: 100%;
+}
+
+.PopupBEA__Formulaire[b-dnumx366b6] {
+    width: calc(50% - 20px);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.PopupBEA__Formulaire__Item[b-dnumx366b6] {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 30px;
+}
+
+.PopupBEA__Contenu__Soumission[b-dnumx366b6] {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    row-gap: 20px;
+}
+
+.PopupBEA__Remboursements[b-dnumx366b6] {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+}
+
+.PopupBEA__Remboursements__Nombre[b-dnumx366b6] {
+    margin-bottom: 20px;
+}
+
+.PopupBEA__Remboursements__Liste[b-dnumx366b6] {
+    display: flex;
+    flex-direction: column;
+    row-gap: 10px;
+}
+
+.PopupBEA__Remboursements__Liste__Item[b-dnumx366b6] {
+    display: flex;
+    flex-direction: row;
+    column-gap: 10px;
+}
+
+.PopupBEA__Remboursements__Liste__Total[b-dnumx366b6] {
+    margin-top: 20px;
+}
+
+.ModalRenvoi__Form[b-dnumx366b6] {
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+}
+
+.ModalRenvoi__Form__Item[b-dnumx366b6] {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 30px;
+}

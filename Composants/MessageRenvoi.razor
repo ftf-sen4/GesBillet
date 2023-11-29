@@ -1,0 +1,39 @@
+﻿<div class="Renvoi">
+	<div class="Renvoi__NomRenvoyeur GTT_Titre6">Renvoyé par <b>@NomRenvoyeur</b></div>
+	<div class="Renvoi__Motif GTT_Titre3">
+		<label class="Renvoi__Motif__Label GTT_Body12">Motif :</label>
+		<p class="Renvoi__Motif__Description">
+			*@MotifDeRenvoi
+		</p>
+	</div>
+</div>
+<style>
+	.Renvoi {
+		width: 100%;
+		margin-bottom: 20px;
+		border-radius: 5px;
+		overflow: hidden;
+	}
+
+	.Renvoi__NomRenvoyeur {
+		background-color: var(--gtt-red);
+		padding: 10px 20px;
+		color: var(--gtt-white);
+	}
+
+	.Renvoi__Motif {
+		padding: 20px 20px;
+		color: var(--gtt-white);
+		background-color: var(--gtt-red);
+	}
+</style>
+@code {
+	[Parameter]
+	public string NomRenvoyeur { get; set; }
+
+	[Parameter]
+	public string MotifDeRenvoi { get; set; }
+
+	[Parameter]
+	public DateTime DateDeRenvoi { get; set; }
+}

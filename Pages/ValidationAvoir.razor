@@ -1,0 +1,514 @@
+﻿@page "/validation-avoir"
+@inject ICompagnieService compagnieService
+@inject IAgenceDeVoyageService agenceDeVoyageService
+@inject INotificationUIService notificationUIService
+
+@inject IJSRuntime JS
+@inject IWebHostEnvironment Environment
+
+
+<SfDialog Height="1000" Width="1200" ShowCloseIcon IsModal @bind-Visible="SiPopupConsultationVisible">
+	<DialogTemplates>
+		<Header>
+			<div class="PopupAvoir__EnTete">
+				<div class="GTT_Titre2">Consulter un avoir</div>
+				<div class="GTT_Body16">Vérifiez les informations sur avoir.</div>
+			</div>
+		</Header>
+		<Content>
+			<div class="PopupAvoir__Contenu">
+				<div class="PopupAvoir__Contenu__Haut">
+					<div class="PopupAvoir__Formulaire">
+						<div class="PopupAvoir__Formulaire__Item">
+							<label class="PopupAvoir__Formulaire__Item__Label">
+								*Référence Avoir
+							</label>
+							<SfTextBox Readonly Placeholder="Ex NC0382A17..." @bind-Value="ModelAvoir.RefAvoir"></SfTextBox>
+						</div>
+						<div class="PopupAvoir__Formulaire__Item">
+							<label class="PopupAvoir__Formulaire__Item__Label">
+								*Agence de voyage
+							</label>
+							<SfDropDownList Readonly TItem="Agencevoyage" TValue="int" @bind-Value="ModelAvoir.IDAgenceVoyage" PopupHeight="230px" Placeholder="ASKY..." DataSource="@AgencesDeVoyages">
+								<DropDownListFieldSettings Text="Libelleagencevoyage" Value="Idagencevoyage" />
+								<DropDownListEvents TItem="Agencevoyage" TValue="int"></DropDownListEvents>
+								<DropDownListTemplates TItem="Agencevoyage">
+									<NoRecordsTemplate>
+										<span> Aucune donnée disponible.</span>
+									</NoRecordsTemplate>
+								</DropDownListTemplates>
+							</SfDropDownList>
+						</div>
+						<div class="PopupAvoir__Formulaire__Item">
+							<label class="PopupAvoir__Formulaire__Item__Label">
+								*Date d'émission
+							</label>
+							<SfDatePicker Readonly TValue="DateTime" @bind-Value="@ModelAvoir.DateEmission"></SfDatePicker>
+						</div>
+						<div class="PopupAvoir__Formulaire__Item">
+							<label class="PopupAvoir__Formulaire__Item__Label">
+								*Pièces Jointes
+							</label>
+							<div>
+								@{
+									var indexFichier = 1;
+									foreach (var fichier in ModelFichiersJoints)
+									{
+										var nomFichierAfficher = $"{fichier.Nom}";
+										<div class="GTT_PieceJointe">
+											<img src="/images/pdf.svg" width="48" height="48" />
+											<span class="GTT_PieceJointe__Label">@nomFichierAfficher</span>
+											<div class="GTT_PieceJointe__Actions">
+												<div @onclick="() => AfficherFichierSurNouvellePage(fichier.CheminAbsolu, nomFichierAfficher)" class="GTT_Icon_Button GTT_Icon_Button_Eye">
+													<img src="/images/eye_icon_bouton.svg" width="24" height="24" />
+												</div>
+											</div>
+										</div>
+										indexFichier++;
+									}
+								}
+							</div>
+						</div>
+						<div class="PopupAvoir__Formulaire__Item">
+							<label class="PopupAvoir__Formulaire__Item__Label">
+								Observation
+							</label>
+							<SfTextBox Readonly Multiline=true Placeholder="Entrez une observation ici..." Value="@ModelAvoir.Observation"></SfTextBox>
+						</div>
+					</div>
+					<div class="PopupAvoir__Remboursements">
+						<div class="PopupAvoir__Remboursements__Nombre">
+							<label>
+								*Nombre de billets remboursés
+							</label>
+							<SfNumericTextBox Max="20" Readonly Placeholder="Entrez le nombre de remboursements" Value="@NombreDeTitreRembPourAvoirEnCours"></SfNumericTextBox>
+						</div>
+						<div class="PopupAvoir__Remboursements__Liste">
+							@foreach (var i in Enumerable.Range(0, NombreDeTitreRembPourAvoirEnCours))
+							{
+								var ii = i;
+
+								<div class="PopupAvoir__Remboursements__Liste__Item">
+									<SfTextBox Readonly Placeholder="Référence" Value="@ListeRembAvoirSaisie[ii].Item1"></SfTextBox>
+									<SfNumericTextBox TValue="decimal" Readonly Placeholder="Entrez le nombre de remboursements" Value="@ListeRembAvoirSaisie[ii].Item2"></SfNumericTextBox>
+								</div>
+							}
+							<div class="PopupAvoir__Remboursements__Liste__Total GTT_Titre3">
+								Total : @TotalAvoir.ToString("N2", new CultureInfo("fr-FR")) FCFA
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="PopupAvoir__Contenu__Soumission">
+					<button @onclick="OuvrirPopupValiderAvoirEnCours" class="GTTbutton GTT_Button_Positive PopupAvoir__Contenu__Soumission__Item">
+						Valider
+					</button>
+					<button @onclick="OuvrirPopupRejeterAvoirEnCours" class="GTTbutton GTT_Button_Danger PopupAvoir__Contenu__Soumission__Item">
+						Rejeter
+					</button>
+				</div>
+			</div>
+		</Content>
+	</DialogTemplates>
+	<DialogEvents OnClose="@EffacerConsultation" />
+</SfDialog>
+
+<SfDialog Width="500" ShowCloseIcon IsModal @bind-Visible="SiPopupRenvoiAvoirVisible">
+	<DialogTemplates>
+		<Header>
+			<div class="ModalHeader">
+				<div class="ModalHeader__Title GTT_Titre2">Renvoi du BE de Règlement.</div>
+			</div>
+		</Header>
+		<Content>
+			<EditForm Model="ModelDeRenvoi" OnValidSubmit="RenvoyerAvoir">
+				<DataAnnotationsValidator />
+				<div class="ModalRenvoi__Form">
+					<div class="ModalRenvoi__Form__Item">
+						<label class="ModalRenvoi__Form__Item__Label">
+							Motif de renvoi
+						</label>
+						<SfTextBox Multiline=true Placeholder="Entrez le motif de renvoi ici..." @bind-Value="@ModelDeRenvoi.MotifDeRenvoi"></SfTextBox>
+						<ValidationMessage For="@(() => ModelDeRenvoi.MotifDeRenvoi)" />
+					</div>
+					<button type="submit" class="GTTbutton GTT_Button_Danger">
+						Renvoyer à l'étape précédente.
+					</button>
+				</div>
+			</EditForm>
+		</Content>
+	</DialogTemplates>
+	<DialogEvents OnClose="@EffacerFormulaireRenvoi" />
+</SfDialog>
+
+<Modal Titre="Envoyer à l'étape supérieure"
+	   Description="Souhaitez-vous envoyer le(s) avoirs à l'étape supérieure ?"
+	   SiModalVisible="SiPopupEnvoyerAvoirVisible"
+	   OnPositiveClickCallback="@EnvoyerAvoirEnEtapeSuperieure"
+	   OnNegativeClickCallback="@AnnulerEnvoyerAvoirEnEtapeSuperieure" />
+
+<Modal Titre="Envoyer à l'étape supérieure"
+	   Description="Souhaitez-vous envoyer le(s) avoirs à l'étape supérieure ?"
+	   SiModalVisible="SiPopupEnvoyerAvoirMultipleVisible"
+	   OnPositiveClickCallback="@EnvoyerAvoirMultipleEnEtapeSuperieure"
+	   OnNegativeClickCallback="@AnnulerEnvoyerAvoirMultipleEnEtapeSuperieure" />
+
+<Modal Titre="Valider"
+	   Description="Souhaitez-vous valider l'avoir ?"
+	   SiModalVisible="SiPopupValiderAvoirVisible"
+	   OnPositiveClickCallback="@ValiderAvoir"
+	   OnNegativeClickCallback="@AnnulerValiderAvoir" />
+
+<Modal Titre="Valider"
+	   Description="Souhaitez-vous valider le(s) avoirs ?"
+	   SiModalVisible="SiPopupValiderAvoirMultipleVisible"
+	   OnPositiveClickCallback="@ValiderAvoirMultiple"
+	   OnNegativeClickCallback="@AnnulerValiderAvoirMultiple" />
+
+<div class="Page">
+	<div class="Page__Header">
+		<div class="Page__Header__Titre GTT_Titre3">Saisie de avoirs</div>
+		<div class="Page__Header__Body">
+			<form class="Page__Header__Formulaire" @onsubmit="RafraichirListeAvoir" method="POST">
+				<div style="display: flex;
+								flex-direction: row;
+								align-items: center;
+								column-gap: 20px;
+								">
+					<SfRadioButton @onchange="RafraichirListeAvoir" Label="En traitement" Name="Status" Value="EnCours" @bind-Checked="Statut"></SfRadioButton>
+					<SfRadioButton @onchange="RafraichirListeAvoir" Label="Validés" Name="Status" Value="Valides" @bind-Checked="Statut"></SfRadioButton>
+				</div>
+				<SfTextBox Width="200px" Placeholder="Rechercher" ID="TermeDeRecherche" @bind-Value="TermeDeRecherche"></SfTextBox>
+				<div style="display: flex; align-items: center; column-gap: 20px;">
+					<div>Du</div>
+					<SfDatePicker Width="140px" TValue="DateTime?" @bind-Value="@DateDebut"></SfDatePicker>Avoir
+					<div>Au</div>
+					<SfDatePicker Width="140px" TValue="DateTime?" @bind-Value="@DateFin"></SfDatePicker>
+				</div>
+				<SfButton IsPrimary type="submit">Rafraichir</SfButton>
+			</form>
+			<div class="Page__Header__Body__Actions">
+				<button @onclick="OuvrirPopupValiderAvoirMultiple" disabled="@SiPopupConsultationVisible" class="GTTbutton GTT_Button_Positive">
+					Valider
+				</button>
+				<button @onclick="OuvrirPopupEnvoyerAvoirMultiple" disabled="@(ListeIDAvoirSelectionnes.Count == 0)" class="GTTbutton GTT_Button_Validation">
+					Envoyer
+				</button>
+			</div>
+		</div>
+	</div>
+	<div class="Page__Tableau">
+		<SfGrid DataSource="@ListeAvoirs" TValue="AffichageAvoir" RowHeight="60">
+			<GridSelectionSettings CheckboxOnly></GridSelectionSettings>
+			<GridEvents RowSelected="RowSelectHandlerAvoir" RowDeselected="@RowDeselectHandlerAvoir" TValue="AffichageAvoir"></GridEvents>
+			<GridColumns>
+				<GridColumn Type="ColumnType.CheckBox" Width="50"></GridColumn>
+				<GridColumn Field=@nameof(AffichageAvoir.RefAvoir) HeaderText="N° Avoir" TextAlign="TextAlign.Left" Width="120"></GridColumn>
+				<GridColumn Field="@nameof(AffichageAvoir.DateSaisie)" HeaderText="Date & Heure de saisie" Width="200">
+					<Template>
+						@{
+							var Details = context as AffichageAvoir;
+							if (Details.DateSaisie.HasValue)
+							{
+								<div>@(Details.DateSaisie.Value.ToString("dd MMMM yyyy HH:mm"))</div>
+							}
+						}
+					</Template>
+				</GridColumn>
+				<GridColumn Field=@nameof(AffichageAvoir.LibelleAgence) HeaderText="Agence" TextAlign="TextAlign.Left" Width="120"></GridColumn>
+				<GridColumn Field=@nameof(AffichageAvoir.Observation) HeaderText="Observation" TextAlign="TextAlign.Left" Width="120"></GridColumn>
+				<GridColumn HeaderText="Actions" TextAlign="TextAlign.Left">
+					<Template>
+						@{
+							var Details = (context as AffichageAvoir);
+							<div style="display: flex; column-gap: 20px;">
+								<button @onclick="@(()=> RowOuvrirPopupConsultationAvoir(Details.IDAvoir))" class="GTT_Icon_Button GTT_Icon_Button_Eye">
+									<img src="/images/eye_icon_bouton.svg" width="24" height="24" />
+								</button>
+							</div>
+						}
+					</Template>
+				</GridColumn>
+				<GridTemplates>
+					<EmptyRecordTemplate Context="contextNoRecord">
+						<EspaceVide Contenu="Ajoutez un Avoir pour voir apparaître des éléments dans la liste." />
+					</EmptyRecordTemplate>
+				</GridTemplates>
+			</GridColumns>
+		</SfGrid>
+	</div>
+</div>
+
+@code {
+	private bool SiPopupConsultationVisible { get; set; } = false;
+	private bool SiPopupEnvoyerAvoirVisible { get; set; } = false;
+	private bool SiPopupEnvoyerAvoirMultipleVisible { get; set; } = false;
+	private bool SiPopupValiderAvoirVisible { get; set; } = false;
+	private bool SiPopupValiderAvoirMultipleVisible { get; set; } = false;
+	private bool SiPopupRenvoiAvoirVisible { get; set; } = false;
+
+	private RenvoiModel ModelDeRenvoi = new RenvoiModel();
+
+	private EditForm? RenvoiFormRef;
+
+	private decimal TotalAvoir = new Decimal(0);
+	private int NombreDeTitreRembPourAvoirEnCours = 0;
+	private int nombreDeFichiersAutorises = 2;
+	private List<Agencevoyage>? AgencesDeVoyages;
+	private CreerAvoirModel ModelAvoir = new CreerAvoirModel();
+	private List<FichierAfficher> ModelFichiersJoints = new List<FichierAfficher>();
+
+	private LigneRemboursement LigneRembModel = new LigneRemboursement();
+	List<(string, decimal)> ListeRembAvoirSaisie = new List<(string, decimal)>();
+
+	private string Statut { get; set; } = "EnCours";
+	private List<int> ListeIDAvoirSelectionnes = new List<int>();
+	private string TermeDeRecherche { get; set; } = String.Empty;
+	private DateTime? DateFin { get; set; } = DateTime.Now.AddDays(20);
+	private DateTime? DateDebut { get; set; } = DateTime.Now.AddDays(-20);
+
+	private string NomPjASupprimer = String.Empty;
+	private bool SiSupressionPJPopupVisible = false;
+
+	private int IDAvoirEnConsultation = 0;
+
+	private List<AffichageAvoir> ListeAvoirs = new List<AffichageAvoir>();
+
+	protected async override Task OnInitializedAsync()
+	{
+		AgencesDeVoyages = await agenceDeVoyageService.ObtenirAgencesDeVoyages();
+		await RafraichirListeAvoir();
+	}
+
+	private async Task RafraichirListeAvoir()
+	{
+		ListeIDAvoirSelectionnes.Clear();
+		ListeAvoirs = new List<AffichageAvoir>()
+		{
+			new AffichageAvoir()
+			{
+				DateSaisie = DateTime.Now,
+				DateValidation = DateTime.Now,
+				IDEtape = 1,
+				IDAvoir = 1,
+				IDRenvoi = 1,
+				LibelleAgence = "Asky",
+				Observation = "dsdd"
+			},
+			new AffichageAvoir()
+			{
+				DateSaisie = DateTime.Now,
+				DateValidation = DateTime.Now,
+				IDEtape = 1,
+				IDAvoir = 2,
+				IDRenvoi = 1,
+				LibelleAgence = "Asky",
+				Observation = "dsdd"
+			},
+			new AffichageAvoir()
+			{
+				DateSaisie = DateTime.Now,
+				DateValidation = DateTime.Now,
+				IDEtape = 1,
+				IDAvoir = 3,
+				IDRenvoi = 1,
+				LibelleAgence = "Asky",
+				Observation = "dsdd"
+			}
+		};
+	}
+
+	private async void CreerAvoir()
+	{
+		try
+		{
+			notificationUIService.MontrerChargement();
+
+
+			notificationUIService.AfficherMessage(new NotificationData()
+				{
+					Message = "Avoir Créé avec succès.",
+					TypeMessage = TypeDeNotification.Succes
+				});
+			notificationUIService.CacherChargement();
+			SiPopupConsultationVisible = false;
+			await RafraichirListeAvoir();
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			notificationUIService.CacherChargement();
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void OuvrirPopupEnvoyerAvoir()
+	{
+		SiPopupEnvoyerAvoirVisible = true;
+	}
+
+	private void OuvrirPopupValiderAvoirEnCours()
+	{
+		SiPopupValiderAvoirVisible = true;
+	}
+
+	private void OuvrirPopupRejeterAvoirEnCours()
+	{
+		SiPopupRenvoiAvoirVisible = true;
+	}
+
+	private void EffacerConsultation()
+	{
+		ModelFichiersJoints.Clear();
+		ModelAvoir = new CreerAvoirModel();
+		IDAvoirEnConsultation = 0;
+	}
+
+	private async void EnvoyerAvoirEnEtapeSuperieure()
+	{
+		try
+		{
+			notificationUIService.MontrerChargement();
+			notificationUIService.AfficherMessage(new NotificationData()
+				{
+					Message = "Avoir(s) envoyé(s) à l'étape supérieure.",
+					TypeMessage = TypeDeNotification.Succes
+				});
+
+			SiPopupEnvoyerAvoirVisible = false;
+			await RafraichirListeAvoir();
+			StateHasChanged();
+			notificationUIService.CacherChargement();
+		}
+		catch (Exception exception)
+		{
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void AnnulerEnvoyerAvoirEnEtapeSuperieure()
+	{
+		SiPopupEnvoyerAvoirVisible = false;
+	}
+
+	private void EnvoyerAvoirMultipleEnEtapeSuperieure()
+	{
+		SiPopupEnvoyerAvoirMultipleVisible = false;
+	}
+
+	private void AnnulerEnvoyerAvoirMultipleEnEtapeSuperieure()
+	{
+		SiPopupEnvoyerAvoirMultipleVisible = false;
+	}
+
+	private void ValiderAvoir()
+	{
+		SiPopupValiderAvoirVisible = false;
+	}
+
+	private void AnnulerValiderAvoir()
+	{
+		SiPopupValiderAvoirVisible = false;
+	}
+
+	private void ValiderAvoirMultiple()
+	{
+		SiPopupValiderAvoirMultipleVisible = false;
+	}
+
+	private void AnnulerValiderAvoirMultiple()
+	{
+		SiPopupValiderAvoirMultipleVisible = false;
+	}
+
+	private void EffacerFormulaireRenvoi()
+	{
+		ModelDeRenvoi = new RenvoiModel();
+	}
+
+	private void RenvoyerAvoir()
+	{
+		SiPopupRenvoiAvoirVisible = false;
+	}
+
+	private void OuvrirPopupValiderAvoirMultiple(){
+		SiPopupValiderAvoirMultipleVisible = true;
+	}
+
+	private void OuvrirPopupEnvoyerAvoirMultiple()
+	{
+		SiPopupEnvoyerAvoirMultipleVisible = true;	
+	}
+
+	private async void AfficherFichierSurNouvellePage(string CheminAbsoluFichier, string NomFichier)
+	{
+		FileStream StreamFichier = new FileStream(CheminAbsoluFichier, System.IO.FileMode.Open, System.IO.FileAccess.Read);
+		MemoryStream stream = new MemoryStream();
+		StreamFichier.CopyTo(stream);
+		byte[] byteArray = stream.ToArray();
+		await JS.InvokeAsync<object>("openStreamInNewWindow", Convert.ToBase64String(byteArray), NomFichier);
+	}
+
+	private void RowOuvrirPopupConsultationAvoir(int IDAvoir)
+	{
+		try
+		{
+			IDAvoirEnConsultation = IDAvoir;
+			notificationUIService.MontrerChargement();
+
+			ListeRembAvoirSaisie.Add(("AZER", new Decimal(10)));
+			ListeRembAvoirSaisie.Add(("AZER", new Decimal(10)));
+			ListeRembAvoirSaisie.Add(("AZER", new Decimal(10)));
+			ListeRembAvoirSaisie.Add(("AZER", new Decimal(10)));
+
+			NombreDeTitreRembPourAvoirEnCours = 4;
+
+			TotalAvoir = ListeRembAvoirSaisie.Select(remb => remb.Item2).Sum();
+
+
+			notificationUIService.CacherChargement();
+			SiPopupConsultationVisible = true;
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			AfficherMessageErreur(exception);
+		}
+	}
+
+
+	private void RowSelectHandlerAvoir(RowSelectEventArgs<AffichageAvoir> args)
+	{
+		if (args.IsInteracted)
+		{
+			ListeIDAvoirSelectionnes.Add(args.Data.IDAvoir);
+		}
+		if (args.IsHeaderCheckboxClicked)
+		{
+			ListeIDAvoirSelectionnes.Clear();
+			ListeIDAvoirSelectionnes.AddRange(ListeAvoirs.Select(e => e.IDAvoir));
+		}
+	}
+
+	private void RowDeselectHandlerAvoir(RowDeselectEventArgs<AffichageAvoir> args)
+	{
+		if (args.IsInteracted)
+		{
+			ListeIDAvoirSelectionnes.Remove(args.Data.IDAvoir);
+		}
+		if (args.IsHeaderCheckboxClicked)
+		{
+			ListeIDAvoirSelectionnes.Clear();
+		}
+	}
+
+	private void AfficherMessageErreur(Exception exception)
+	{
+		notificationUIService.CacherChargement();
+		notificationUIService.AfficherMessage(new NotificationData()
+			{
+				Message = exception.Message,
+				TypeMessage = TypeDeNotification.Erreur
+			});
+	}
+}

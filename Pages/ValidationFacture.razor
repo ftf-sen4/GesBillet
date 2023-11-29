@@ -1,0 +1,522 @@
+﻿@page "/validation-facture"
+
+@inject IConfiguration _config
+@inject ICompagnieService compagnieService
+@inject IAgenceDeVoyageService agenceDeVoyageService
+@inject INotificationUIService notificationUIService
+@inject IValidationFactureService validationFactureService
+@inject IJSRuntime JS
+@inject IWebHostEnvironment Environment
+
+
+<SfDialog Height="1000" Width="1200px" ShowCloseIcon IsModal @bind-Visible="SiPopupConsultationVisible">
+	<DialogTemplates>
+		<Header>
+			<div class="PopupFacture__EnTete">
+				<div class="GTT_Titre2">Consultez une Facture</div>
+				<div class="GTT_Body16">Consultez les informations de la facture.</div>
+			</div>
+		</Header>
+		<Content>
+			<div class="PopupFacture__Contenu">
+				<div class="PopupFacture__Contenu__Haut">
+					<div class="PopupFacture__Formulaire">
+						<div class="PopupFacture__Formulaire__Item">
+							<label class="PopupFacture__Formulaire__Item__Label">
+								Agence de voyage
+							</label>
+							<SfDropDownList TItem="Agencevoyage" Readonly TValue="int" Value="ModelFacture.IDAgenceDeVoyage" PopupHeight="230px" Placeholder="ASKY..." DataSource="@AgencesDeVoyages">
+								<DropDownListFieldSettings Text="Libelleagencevoyage" Value="Idagencevoyage" />
+								<DropDownListEvents TItem="Agencevoyage" TValue="int"></DropDownListEvents>
+								<DropDownListTemplates TItem="Agencevoyage">
+									<NoRecordsTemplate>
+										<span> Aucune donnée disponible.</span>
+									</NoRecordsTemplate>
+								</DropDownListTemplates>
+							</SfDropDownList>
+						</div>
+						<div class="PopupFacture__Formulaire__Item">
+							<label class="PopupFacture__Formulaire__Item__Label">
+								Pièces Jointes
+							</label>
+							<div>
+								@{
+									var indexFichier = 1;
+									foreach (var fichier in ModelFichiersJoints)
+									{
+										var nomFichierAfficher = $"{fichier.Nom}";
+										<div class="GTT_PieceJointe">
+											<img src="/images/pdf.svg" width="48" height="48" />
+											<span class="GTT_PieceJointe__Label">@nomFichierAfficher</span>
+											<div class="GTT_PieceJointe__Actions">
+												<div @onclick="() => AfficherFichierSurNouvellePage(fichier.CheminAbsolu, nomFichierAfficher)" class="GTT_Icon_Button GTT_Icon_Button_Eye">
+													<img src="/images/eye_icon_bouton.svg" width="24" height="24" />
+												</div>
+											</div>
+										</div>
+										indexFichier++;
+									}
+								}
+							</div>
+						</div>
+						<div class="PopupFacture__Formulaire__Item">
+							<label class="PopupFacture__Formulaire__Item__Label">
+								Observation
+							</label>
+							<SfTextBox Readonly Multiline=true Placeholder="Entrez une observation ici..." Value="@ModelFacture.Observation"></SfTextBox>
+						</div>
+					</div>
+				</div>
+				<div class="PopupFacture__Contenu__Bas">
+					<SfGrid Height="400" DataSource="@ListeDesTitresFactureEnCours" AllowTextWrap TValue="AffichageTitreAvecPJ">
+						<GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
+						<GridColumns>
+							<GridColumn Field=@nameof(AffichageTitreAvecPJ.RefTitre) HeaderText="REFERENCE" TextAlign="TextAlign.Left" Width="200"></GridColumn>
+							<GridColumn Field=@nameof(AffichageTitreAvecPJ.LibelleClasse) HeaderText="CLASSE" TextAlign="TextAlign.Left" Width="200"></GridColumn>
+							<GridColumn Field=@nameof(AffichageTitreAvecPJ.MontantTitreDeTransport) Format="N0" HeaderText="MONTANT" TextAlign="TextAlign.Left" Width="200"></GridColumn>
+							<GridColumn Field=@nameof(AffichageTitreAvecPJ.ListePiecesJointes) HeaderText="PIECES JOINTES" TextAlign="TextAlign.Left" Width="200">
+								<Template>
+									@{
+										var pieceJointe = context as AffichageTitreAvecPJ;
+										var indexFichier = 1;
+										foreach (var fichier in pieceJointe.ListePiecesJointes)
+										{
+											var nomFichierAfficher = $"{fichier.Nom}";
+											<span @onclick="() => AfficherFichierSurNouvellePage(fichier.CheminAbsolu, nomFichierAfficher)" class="GTT_Body12">@nomFichierAfficher</span>
+											<br />
+											indexFichier++;
+										}
+									}
+								</Template>
+							</GridColumn>
+						</GridColumns>
+						<GridTemplates>
+							<EmptyRecordTemplate Context="contextNoRecord">
+								<EspaceVide />
+							</EmptyRecordTemplate>
+						</GridTemplates>
+					</SfGrid>
+				</div>
+				<div class="PopupFacture__Contenu__Soumission">
+					<button @onclick="OuvrirPopupValiderFactureEnCours" type="submit" class="GTTbutton GTT_Button_Positive PopupFacture__Contenu__Soumission__Item">
+						Valider
+					</button>
+					<button @onclick="OuvrirPopupRenvoiFactureEnCours" type="submit" class="GTTbutton GTT_Button_Danger PopupFacture__Contenu__Soumission__Item">
+						Rejeter
+					</button>
+				</div>
+			</div>
+		</Content>
+	</DialogTemplates>
+	<DialogEvents OnClose="@EffacerConsulationDetails" />
+</SfDialog>
+<SfDialog Width="500" ShowCloseIcon IsModal @bind-Visible="SiPopupRenvoiFactureVisible">
+	<DialogTemplates>
+		<Header>
+			<div class="ModalHeader">
+				<div class="ModalHeader__Title GTT_Titre2">Renvoi de la facture.</div>
+			</div>
+		</Header>
+		<Content>
+			<EditForm Model="ModelDeRenvoi" OnValidSubmit="RenvoyerFacture">
+				<DataAnnotationsValidator />
+				<div class="ModalRenvoi__Form">
+					<div class="ModalRenvoi__Form__Item">
+						<label class="ModalRenvoi__Form__Item__Label">
+							Motif de renvoi
+						</label>
+						<SfTextBox Multiline=true Placeholder="Entrez le motif de renvoi ici..." @bind-Value="@ModelDeRenvoi.MotifDeRenvoi"></SfTextBox>
+						<ValidationMessage For="@(() => ModelDeRenvoi.MotifDeRenvoi)" />
+					</div>
+					<button type="submit" class="GTTbutton GTT_Button_Danger">
+						Renvoyer à l'étape précédente.
+					</button>
+				</div>
+			</EditForm>
+		</Content>
+	</DialogTemplates>
+	<DialogEvents OnClose="@EffacerFormulaireRenvoi" />
+</SfDialog>
+
+<Modal Titre="Envoyer à l'étape supérieure"
+	   Description="Souhaitez-vous envoyer la facture à l'étape supérieure ?"
+	   SiModalVisible="SiPopupEnvoyerFactureVisible"
+	   OnPositiveClickCallback="@EnvoyerFactureEnEtapeSuperieure"
+	   OnNegativeClickCallback="@AnnulerEnvoyerFactureEnEtapeSuperieure" />
+
+<Modal Titre="Envoyer à l'étape supérieure"
+	   Description="Souhaitez-vous envoyer le(s) facture(s) à l'étape supérieure ?"
+	   SiModalVisible="SiPopupEnvoyerFactureMultipleVisible"
+	   OnPositiveClickCallback="@EnvoyerMultipleFactureEnEtapeSuperieure"
+	   OnNegativeClickCallback="@AnnulerEnvoyerMultipleFactureEnEtapeSuperieure" />
+
+<Modal Titre="Valider"
+	   Description="Souhaitez-vous valider la facture ?"
+	   SiModalVisible="SiPopupValiderFactureVisible"
+	   OnPositiveClickCallback="@ValiderFacture"
+	   OnNegativeClickCallback="@AnnulerValiderFacture" />
+
+<Modal Titre="Valider"
+	   Description="Souhaitez-vous valider le(s) factures ?"
+	   SiModalVisible="SiPopupValiderFactureMultipleVisible"
+	   OnPositiveClickCallback="@ValiderFactureMultiple"
+	   OnNegativeClickCallback="@AnnulerValiderFactureMultiple" />
+
+
+<div class="Page">
+	<div class="Page__Header">
+		<div class="Page__Header__Titre GTT_Titre3">Validations des factures</div>
+		<div class="Page__Header__Body">
+			<form class="Page__Header__Formulaire" @onsubmit="RafraichirListeFacture" method="POST">
+				<div style="display: flex;
+								flex-direction: row;
+								align-items: center;
+								column-gap: 20px;
+								">
+					<SfRadioButton @onchange="RafraichirListeFacture" Label="En traitement" Name="Status" Value="EnCours" @bind-Checked="Statut"></SfRadioButton>
+					<SfRadioButton @onchange="RafraichirListeFacture" Label="Validés" Name="Status" Value="Valides" @bind-Checked="Statut"></SfRadioButton>
+				</div>
+				<SfTextBox Width="200px" Placeholder="Rechercher" ID="TermeDeRecherche" @bind-Value="TermeDeRecherche"></SfTextBox>
+				<div style="display: flex; align-items: center; column-gap: 20px;">
+					<div>Du</div>
+					<SfDatePicker Width="140px" TValue="DateTime?" @bind-Value="@DateDebut"></SfDatePicker>
+					<div>Au</div>
+					<SfDatePicker Width="140px" TValue="DateTime?" @bind-Value="@DateFin"></SfDatePicker>
+				</div>
+				<SfButton IsPrimary type="submit">Rafraichir</SfButton>
+			</form>
+			<div class="Page__Header__Body__Actions">
+				<button @onclick="OuvrirPopupValidationFactureMultiple" disabled="@(ListeIDFactureSelectionnes.Count < 1)" class="GTTbutton GTT_Button_Positive">
+					Valider
+				</button>
+				<button @onclick="OuvrirPopupEnvoiFactureMultiple" disabled="@(ListeIDFactureSelectionnes.Count < 1)" class="GTTbutton GTT_Button_Validation">
+					Envoyer
+				</button>
+			</div>
+		</div>
+	</div>
+	<div class="Page__Tableau">
+		<SfGrid DataSource="@ListeDesFactures" TValue="AffichageFacture" RowHeight="60">
+			<GridEvents RowSelected="RowSelectHandlerFacture" RowDeselected="@RowDeselectHandlerFacture" TValue="AffichageFacture"></GridEvents>
+			<GridColumns>
+				<GridColumn Type="ColumnType.CheckBox" Width="50"></GridColumn>
+				<GridColumn Field=@nameof(AffichageFacture.IDFacture) HeaderText="N° FACTURE" TextAlign="TextAlign.Left" Width="120"></GridColumn>
+				<GridColumn Field="@nameof(AffichageFacture.DateSaisie)" HeaderText="DATE ET HEURE DE SAISIE" Width="200">
+					<Template>
+						@{
+							var Details = context as AffichageFacture;
+							if (Details.DateSaisie.HasValue)
+							{
+								<div>@(Details.DateSaisie.Value.ToString("dd MMMM yyyy HH:mm"))</div>
+							}
+						}
+					</Template>
+				</GridColumn>
+				<GridColumn Field=@nameof(AffichageFacture.LibelleAgence) HeaderText="AGENCE" TextAlign="TextAlign.Left" Width="200"></GridColumn>
+				<GridColumn Field=@nameof(AffichageFacture.Observation) HeaderText="OBSERVATION" TextAlign="TextAlign.Left" Width="200"></GridColumn>
+				<GridColumn HeaderText="ACTIONS" TextAlign="TextAlign.Left">
+					<Template>
+						@{
+							var Details = (context as AffichageFacture);
+							<div style="display: flex; column-gap: 20px;">
+								<button @onclick="@(()=> RowAfficherPopupConsultation(Details.IDFacture))" class="GTT_Icon_Button GTT_Icon_Button_Eye">
+									<img src="/images/eye_icon_bouton.svg" width="24" height="24" />
+								</button>
+							</div>
+						}
+					</Template>
+				</GridColumn>
+				<GridTemplates>
+					<EmptyRecordTemplate Context="contextNoRecord">
+						<EspaceVide Contenu="Ajoutez un Facture pour voir apparaître des éléments dans la liste." />
+					</EmptyRecordTemplate>
+				</GridTemplates>
+			</GridColumns>
+		</SfGrid>
+	</div>
+</div>
+
+@code {
+	private bool SiPopupConsultationVisible { get; set; } = false;
+	private bool SiPopupRenvoiFactureVisible { get; set; } = false;
+	private bool SiPopupEnvoyerFactureVisible { get; set; } = false;
+	private bool SiPopupEnvoyerFactureMultipleVisible { get; set; } = false;
+
+	private bool SiPopupValiderFactureVisible { get; set; } = false;
+	private bool SiPopupValiderFactureMultipleVisible { get; set; } = false;
+
+	private int IDFactureEncours { get; set; } = 0;
+
+	private List<Agencevoyage>? AgencesDeVoyages;
+	private CreerFactureModel ModelFacture = new CreerFactureModel();
+	private List<FichierAfficher> ModelFichiersJoints = new List<FichierAfficher>();
+
+	private string Statut { get; set; } = "EnCours";
+	private string TermeDeRecherche { get; set; } = String.Empty;
+	private DateTime? DateFin { get; set; } = DateTime.Now.AddDays(20);
+	private DateTime? DateDebut { get; set; } = DateTime.Now.AddDays(-20);
+	private List<AffichageFacture> ListeDesFactures = new List<AffichageFacture>();
+
+	private List<int> ListeIDFactureSelectionnes = new List<int>();
+	private List<AffichageTitreAvecPJ> ListeDesTitresFactureEnCours = new List<AffichageTitreAvecPJ>();
+
+	private RenvoiModel ModelDeRenvoi = new RenvoiModel();
+
+	protected async override Task OnInitializedAsync()
+	{
+		AgencesDeVoyages = await agenceDeVoyageService.ObtenirAgencesDeVoyages();
+		await RafraichirListeFacture();
+	}
+
+	private async Task RafraichirListeFacture()
+	{
+		ListeIDFactureSelectionnes.Clear();
+		ListeDesFactures = await validationFactureService.ObtenirListeFacture(new ValidationFactureRechercheModel()
+			{
+				DateFin = DateFin,
+				DateDebut = DateDebut,
+				TermeDeRecherche = TermeDeRecherche,
+				EnCours = Statut == "EnCours",
+				Valides = Statut == "Valides"
+			});
+	}
+
+	private void OuvrirPopupEnvoyerFacture()
+	{
+		SiPopupEnvoyerFactureVisible = true;
+	}
+
+	private void OuvrirPopupValidationFactureMultiple()
+	{
+		SiPopupValiderFactureMultipleVisible = true;
+	}
+
+	private void OuvrirPopupEnvoiFactureMultiple()
+	{
+		SiPopupEnvoyerFactureMultipleVisible = true;
+	}
+
+	private void OuvrirPopupValiderFactureEnCours()
+	{
+		SiPopupValiderFactureVisible = true;
+	}
+
+	private void OuvrirPopupRenvoiFactureEnCours()
+	{
+		SiPopupRenvoiFactureVisible = true;
+	}
+
+	private async void EnvoyerFactureEnEtapeSuperieure()
+	{
+		try
+		{
+			notificationUIService.MontrerChargement();
+			notificationUIService.AfficherMessage(new NotificationData()
+				{
+					Message = "Facture(s) envoyé(s) à l'étape supérieure.",
+					TypeMessage = TypeDeNotification.Succes
+				});
+
+			SiPopupEnvoyerFactureVisible = false;
+			await RafraichirListeFacture();
+			StateHasChanged();
+			notificationUIService.CacherChargement();
+		}
+		catch (Exception exception)
+		{
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void AnnulerEnvoyerFactureEnEtapeSuperieure()
+	{
+		SiPopupEnvoyerFactureVisible = false;
+	}
+
+	private async void EnvoyerMultipleFactureEnEtapeSuperieure()
+	{
+		try {
+			notificationUIService.MontrerChargement();
+			await validationFactureService.EnvoyerFactureEtapeSup(ListeIDFactureSelectionnes);
+			notificationUIService.AfficherMessage(new NotificationData()
+				{
+					Message = "Factures(s) envoyée(s) à l'étape supérieure.",
+					TypeMessage = TypeDeNotification.Succes
+				});
+			notificationUIService.CacherChargement();
+			SiPopupEnvoyerFactureMultipleVisible = false;
+			await RafraichirListeFacture();
+			StateHasChanged();
+		}catch(Exception exception){
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void AnnulerEnvoyerMultipleFactureEnEtapeSuperieure()
+	{
+		SiPopupEnvoyerFactureMultipleVisible = false;
+	}
+
+	private async void ValiderFacture()
+	{
+		try
+		{
+			notificationUIService.MontrerChargement();
+			await validationFactureService.ValiderFacture(IDFactureEncours);
+			notificationUIService.AfficherMessage(new NotificationData()
+				{
+					Message = "Facture validée avec succès.",
+					TypeMessage = TypeDeNotification.Succes
+				});
+			notificationUIService.CacherChargement();
+
+			SiPopupValiderFactureVisible = false;
+			SiPopupConsultationVisible = false;
+			IDFactureEncours = 0;
+			ListeIDFactureSelectionnes.Clear();
+			await RafraichirListeFacture();
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void AnnulerValiderFacture()
+	{
+		SiPopupValiderFactureVisible = false;
+	}
+
+
+	private async void ValiderFactureMultiple()
+	{
+		try
+		{
+			notificationUIService.MontrerChargement();
+			await validationFactureService.ValiderFacture(ListeIDFactureSelectionnes);
+			notificationUIService.CacherChargement();
+			SiPopupValiderFactureMultipleVisible = false;
+			ListeIDFactureSelectionnes.Clear();
+			await RafraichirListeFacture();
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void AnnulerValiderFactureMultiple()
+	{
+		SiPopupValiderFactureMultipleVisible = false;
+	}
+
+	private async void RenvoyerFacture()
+	{
+		try
+		{
+			notificationUIService.MontrerChargement();
+			await validationFactureService.RenvoyerFacture(IDFactureEncours, ModelDeRenvoi.MotifDeRenvoi);
+			notificationUIService.AfficherMessage(new NotificationData()
+				{
+					Message = "Facture renvoyée avec succès.",
+					TypeMessage = TypeDeNotification.Succes
+				});
+			SiPopupRenvoiFactureVisible = false;
+			SiPopupConsultationVisible = false;
+			IDFactureEncours = 0;
+			notificationUIService.CacherChargement();
+			await RafraichirListeFacture();
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void EffacerConsulationDetails()
+	{
+		ModelFacture = new CreerFactureModel();
+		ListeDesTitresFactureEnCours.Clear();
+		ModelFichiersJoints.Clear();
+	}
+
+	private void EffacerFormulaireRenvoi()
+	{
+		IDFactureEncours = 0;
+		ModelDeRenvoi = new RenvoiModel();
+	}
+
+	private async void AfficherFichierSurNouvellePage(string CheminAbsoluFichier, string NomFichier)
+	{
+		FileStream StreamFichier = new FileStream(CheminAbsoluFichier, System.IO.FileMode.Open, System.IO.FileAccess.Read);
+		MemoryStream stream = new MemoryStream();
+		StreamFichier.CopyTo(stream);
+		byte[] byteArray = stream.ToArray();
+		await JS.InvokeAsync<object>("openStreamInNewWindow", Convert.ToBase64String(byteArray), NomFichier);
+	}
+
+	private async void RowAfficherPopupConsultation(int IDFacture)
+	{
+		try
+		{
+			IDFactureEncours = IDFacture;
+			notificationUIService.MontrerChargement();
+
+			var Resultat = await validationFactureService.ObtenirDetailsFacture(IDFacture);
+
+			ModelFacture.IDAgenceDeVoyage = Resultat.IDAgenceVoyage;
+			ModelFacture.Observation = Resultat.Observation;
+			ModelFacture.DateEmission = Resultat.DateEmission;
+			ListeDesTitresFactureEnCours = Resultat.ListeTitres;
+
+			ModelFichiersJoints = Resultat.ListePiecesJointes;
+
+			SiPopupConsultationVisible = true;
+			notificationUIService.CacherChargement();
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			AfficherMessageErreur(exception);
+		}
+	}
+
+
+	private void AfficherMessageErreur(Exception exception)
+	{
+		notificationUIService.CacherChargement();
+		notificationUIService.AfficherMessage(new NotificationData()
+			{
+				Message = exception.Message,
+				TypeMessage = TypeDeNotification.Erreur
+			});
+	}
+
+	private void RowSelectHandlerFacture(RowSelectEventArgs<AffichageFacture> args)
+	{
+		if (args.IsInteracted)
+		{
+			ListeIDFactureSelectionnes.Add(args.Data.IDFacture);
+		}
+		if (args.IsHeaderCheckboxClicked)
+		{
+			ListeIDFactureSelectionnes.Clear();
+			ListeIDFactureSelectionnes.AddRange(ListeDesFactures.Select(e => e.IDFacture));
+		}
+	}
+
+	private void RowDeselectHandlerFacture(RowDeselectEventArgs<AffichageFacture> args)
+	{
+		if (args.IsInteracted)
+		{
+			ListeIDFactureSelectionnes.Remove(args.Data.IDFacture);
+		}
+		if (args.IsHeaderCheckboxClicked)
+		{
+			ListeIDFactureSelectionnes.Clear();
+		}
+	}
+}

@@ -1,0 +1,157 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\obj\\Release\\net7.0\\scopedcss\\projectbundle\\Gestions des Titres de Transport.bundle.scp.css",
+      "PackagePath": "staticwebassets\\Gestions des Titres de Transport.bundle.scp.css"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\css\\bootstrap\\bootstrap.min.css",
+      "PackagePath": "staticwebassets\\css\\bootstrap\\bootstrap.min.css"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\css\\bootstrap\\bootstrap.min.css.map",
+      "PackagePath": "staticwebassets\\css\\bootstrap\\bootstrap.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\css\\open-iconic\\FONT-LICENSE",
+      "PackagePath": "staticwebassets\\css\\open-iconic"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\css\\open-iconic\\ICON-LICENSE",
+      "PackagePath": "staticwebassets\\css\\open-iconic"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\css\\open-iconic\\README.md",
+      "PackagePath": "staticwebassets\\css\\open-iconic\\README.md"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\css\\open-iconic\\font\\css\\open-iconic-bootstrap.min.css",
+      "PackagePath": "staticwebassets\\css\\open-iconic\\font\\css\\open-iconic-bootstrap.min.css"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\css\\open-iconic\\font\\fonts\\open-iconic.eot",
+      "PackagePath": "staticwebassets\\css\\open-iconic\\font\\fonts\\open-iconic.eot"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\css\\open-iconic\\font\\fonts\\open-iconic.otf",
+      "PackagePath": "staticwebassets\\css\\open-iconic\\font\\fonts\\open-iconic.otf"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\css\\open-iconic\\font\\fonts\\open-iconic.svg",
+      "PackagePath": "staticwebassets\\css\\open-iconic\\font\\fonts\\open-iconic.svg"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\css\\open-iconic\\font\\fonts\\open-iconic.ttf",
+      "PackagePath": "staticwebassets\\css\\open-iconic\\font\\fonts\\open-iconic.ttf"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\css\\open-iconic\\font\\fonts\\open-iconic.woff",
+      "PackagePath": "staticwebassets\\css\\open-iconic\\font\\fonts\\open-iconic.woff"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\css\\site.css",
+      "PackagePath": "staticwebassets\\css\\site.css"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\favicon.png",
+      "PackagePath": "staticwebassets\\favicon.png"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\images\\attention.svg",
+      "PackagePath": "staticwebassets\\images\\attention.svg"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\images\\back.jpg",
+      "PackagePath": "staticwebassets\\images\\back.jpg"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\images\\close.svg",
+      "PackagePath": "staticwebassets\\images\\close.svg"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\images\\erreur.svg",
+      "PackagePath": "staticwebassets\\images\\erreur.svg"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\images\\eye_icon_bouton.svg",
+      "PackagePath": "staticwebassets\\images\\eye_icon_bouton.svg"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\images\\info.svg",
+      "PackagePath": "staticwebassets\\images\\info.svg"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\images\\logo_big.png",
+      "PackagePath": "staticwebassets\\images\\logo_big.png"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\images\\pdf.svg",
+      "PackagePath": "staticwebassets\\images\\pdf.svg"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\images\\pencil_icon_bouton.svg",
+      "PackagePath": "staticwebassets\\images\\pencil_icon_bouton.svg"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\images\\print_icon_bouton.svg",
+      "PackagePath": "staticwebassets\\images\\print_icon_bouton.svg"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\images\\succes.svg",
+      "PackagePath": "staticwebassets\\images\\succes.svg"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\images\\trash_icon_bouton.svg",
+      "PackagePath": "staticwebassets\\images\\trash_icon_bouton.svg"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\js\\script.js",
+      "PackagePath": "staticwebassets\\js\\script.js"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\logo.png",
+      "PackagePath": "staticwebassets\\logo.png"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\polices\\OpenSans-Bold.woff",
+      "PackagePath": "staticwebassets\\polices\\OpenSans-Bold.woff"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\polices\\OpenSans-BoldItalic.woff",
+      "PackagePath": "staticwebassets\\polices\\OpenSans-BoldItalic.woff"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\polices\\OpenSans-ExtraBold.woff",
+      "PackagePath": "staticwebassets\\polices\\OpenSans-ExtraBold.woff"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\polices\\OpenSans-Light.woff",
+      "PackagePath": "staticwebassets\\polices\\OpenSans-Light.woff"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\polices\\OpenSans-Regular.woff",
+      "PackagePath": "staticwebassets\\polices\\OpenSans-Regular.woff"
+    },
+    {
+      "Id": "C:\\Users\\tmp_dpakakpo\\source\\repos\\Gestions des Titres de Transport\\wwwroot\\polices\\OpenSans-Semibold.woff",
+      "PackagePath": "staticwebassets\\polices\\OpenSans-Semibold.woff"
+    },
+    {
+      "Id": "obj\\Release\\net7.0\\staticwebassets\\msbuild.Gestions des Titres de Transport.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Release\\net7.0\\staticwebassets\\msbuild.build.Gestions des Titres de Transport.props",
+      "PackagePath": "build\\Gestions des Titres de Transport.props"
+    },
+    {
+      "Id": "obj\\Release\\net7.0\\staticwebassets\\msbuild.buildMultiTargeting.Gestions des Titres de Transport.props",
+      "PackagePath": "buildMultiTargeting\\Gestions des Titres de Transport.props"
+    },
+    {
+      "Id": "obj\\Release\\net7.0\\staticwebassets\\msbuild.buildTransitive.Gestions des Titres de Transport.props",
+      "PackagePath": "buildTransitive\\Gestions des Titres de Transport.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

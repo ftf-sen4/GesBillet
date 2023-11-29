@@ -1,0 +1,165 @@
+﻿@inject INotificationUIService notificationUIService
+
+
+<SfDialog Height="300px" Width="300px" style="background: transparent;" IsModal @bind-Visible="@ChargementEnCours">
+	<DialogTemplates>
+		<Content>
+			<div class="Chargement">
+				<div class="Chargement__Loader">
+					<div class="dot dot1"></div>
+					<div class="dot dot2"></div>
+					<div class="dot dot3"></div>
+					<div class="dot dot4"></div>
+					<div class="dot dot5"></div>
+				</div>
+			</div>
+		</Content>
+	</DialogTemplates>
+</SfDialog>
+
+<SfToast ID="GTTCustomToastGTTCustomToast" @ref="ToastObj" NewestOnTop ShowProgressBar="false" Timeout="5000">
+	<ToastPosition X="Right" Y="Top"></ToastPosition>
+	<ToastTemplates>
+		<Template>
+			<div class="GTTToast">
+				<div class="GTTToast__Bordure @ClasseCssToast(ContenuDuToast.TypeMessage)"></div>
+				<div class="GTTToast__Description">
+					<div class="GTTToast__Description__Icon">
+						@switch(ContenuDuToast?.TypeMessage)
+						{
+							case TypeDeNotification.Info:
+								<img src="/images/info.svg" alt="SVG" width="32" height="32" />
+							break;
+							case TypeDeNotification.Succes:
+								<img src="/images/succes.svg" alt="SVG" width="32" height="32" />
+							break;
+							case TypeDeNotification.Attention:
+								<img src="/images/attention.svg" alt="SVG" width="32" height="32" />
+							break;
+							case TypeDeNotification.Erreur:
+								<img src="/images/erreur.svg" alt="SVG" width="32" height="32" />
+							break;
+							default:
+								<img src="/images/info.svg" alt="SVG" width="32" height="32" />
+							break;
+						}
+					</div>
+					<div class="GTTToast__Description__Body">
+						<div class="GTTToast__Description__Title GTT_Titre2 @ClasseTextCssToast(ContenuDuToast.TypeMessage)">
+							@TitreDuToast(ContenuDuToast.TypeMessage)
+						</div>
+						<p class="GTTToast__Description__Content GTT_Body16">
+							@ContenuDuToast.Message
+						</p>
+					</div>
+				</div>
+				<div class="GTTToast__Close" @onclick="FermerToast">
+					<img src="/images/close.svg" alt="SVG" width="24" height="24" />
+				</div>
+			</div>
+		</Template>
+	</ToastTemplates>
+</SfToast>
+
+
+@code {
+	SfToast ToastObj;
+	private bool ChargementEnCours = false;
+	private NotificationData ContenuDuToast = new NotificationData();
+
+	protected override void OnInitialized()
+	{
+		notificationUIService.OnCharger += AnimerChargement;
+		notificationUIService.OnAfficher += AfficherNotification;
+	}
+
+	private async void FermerToast()
+	{
+		await ToastObj.HideAsync();
+	}
+
+	private async void AfficherNotification(NotificationData notification)
+	{
+		await ToastObj.HideAsync();
+		ContenuDuToast = notification;
+		await Task.Delay(1000);
+		await ToastObj.ShowAsync();
+	}
+
+	private void AnimerChargement(bool EtatChargement)
+	{
+		ChargementEnCours = EtatChargement;
+	}
+
+	private string ClasseCssToast(TypeDeNotification type)
+	{
+		var ClasseDuToast = String.Empty;
+		@switch (type)
+		{
+			case TypeDeNotification.Info:
+				ClasseDuToast = "GTTToast_Info";
+				break;
+			case TypeDeNotification.Succes:
+				ClasseDuToast = "GTTToast_Success";
+				break;
+			case TypeDeNotification.Attention:
+				ClasseDuToast = "GTTToast_Warning";
+				break;
+			case TypeDeNotification.Erreur:
+				ClasseDuToast = "GTTToast_Error";
+				break;
+			default:
+				ClasseDuToast = "GTTToast_Info";
+				break;
+		}
+		return ClasseDuToast;
+	}
+
+	private string ClasseTextCssToast(TypeDeNotification type)
+	{
+		var ClasseDuTextToast = String.Empty;
+		@switch (type)
+		{
+			case TypeDeNotification.Info:
+				ClasseDuTextToast = "GTTToast_Info__Text";
+				break;
+			case TypeDeNotification.Succes:
+				ClasseDuTextToast = "GTTToast_Success__Text";
+				break;
+			case TypeDeNotification.Attention:
+				ClasseDuTextToast = "GTTToast_Warning__Text";
+				break;
+			case TypeDeNotification.Erreur:
+				ClasseDuTextToast = "GTTToast_Error__Text";
+				break;
+			default:
+				ClasseDuTextToast = "GTTToast_Info__Text";
+				break;
+		}
+		return ClasseDuTextToast;
+	}
+
+	private string TitreDuToast(TypeDeNotification type)
+	{
+		var TitreDuToast = String.Empty;
+		@switch (type)
+		{
+			case TypeDeNotification.Info:
+				TitreDuToast = "Info";
+				break;
+			case TypeDeNotification.Succes:
+				TitreDuToast = "Succès";
+				break;
+			case TypeDeNotification.Attention:
+				TitreDuToast = "Avertissement";
+				break;
+			case TypeDeNotification.Erreur:
+				TitreDuToast = "Erreur";
+				break;
+			default:
+				TitreDuToast = "Info";
+				break;
+		}
+		return TitreDuToast;
+	}
+}

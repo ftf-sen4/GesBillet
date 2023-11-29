@@ -1,0 +1,199 @@
+﻿@inject NavigationManager navigationManager
+
+<nav class="Navbar" role="navigation">
+	<div class="Navbar__Titre GTT_Titre2">Gestion des Titres de Transport</div>
+	<AuthorizeView>
+		<Authorized>
+			<ul class="Navbar__Liste">
+				<li class="Navbar__Liste__Item">
+					<NavLink class="Navbar__Liste__Item__Link" href="/">
+						Accueil
+					</NavLink>
+				</li>
+				@*<li class="Navbar__Liste__Item">
+					<a class="Navbar__Liste__Item__Link">
+						Etats
+					</a>
+					<ul class="Navbar__Liste__Item__SousMenu">
+						<li>
+							<a class="Navbar__Liste__Item__Link">
+								Billets
+							</a>
+						</li>
+						<li>
+							<a class="Navbar__Liste__Item__Link">
+								Missions
+							</a>
+						</li>
+					</ul>
+				</li>*@
+				<li class="Navbar__Liste__Item">
+					<a class="Navbar__Liste__Item__Link">
+						Administration
+					</a>
+					<ul class="Navbar__Liste__Item__SousMenu">
+						<li>
+							<a href="/administration/habilitations-etapes" class="Navbar__Liste__Item__Link">
+								Habilitation des Etapes
+							</a>
+						</li>
+						@*<li>
+							<a href="/administration/habilitations-roles" class="Navbar__Liste__Item__Link">
+								Habilitation des Roles
+							</a>
+						</li>*@
+						<li>
+							<a href="/administration/compagnies" class="Navbar__Liste__Item__Link">
+								Gestion des Compagnies
+							</a>
+						</li>
+						<li>
+							<a href="/administration/classes-de-voyage" class="Navbar__Liste__Item__Link">
+								Gestion des Classes de Voyages
+							</a>
+						</li>
+						<li>
+							<a href="/administration/agences-de-voyage" class="Navbar__Liste__Item__Link">
+								Gestion des Agences De Voyages
+							</a>
+						</li>
+					</ul>
+				</li>
+				<li class="Navbar__Liste__Item">
+					<a class="Navbar__Liste__Item__Link">
+						@context.User.Identity?.Name
+					</a>
+					<ul class="Navbar__Liste__Item__SousMenu">
+						<li>
+							<NavLink class="Navbar__Liste__Item__Link" href="/deconnection">
+								Déconnecter
+							</NavLink>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</Authorized>
+	</AuthorizeView>
+</nav>
+<style>
+
+	.Navbar {
+		display: flex;
+		padding: 10px 40px;
+		background-color: var(--gtt-blue);
+	}
+
+	.Navbar__Titre {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: var(--gtt-white);
+		margin-right: auto;
+	}
+
+	.Navbar__Liste {
+		margin: 0;
+		list-style: none;
+		display: flex;
+		align-items: stretch;
+		column-gap: 20px;
+	}
+
+	.Navbar__Liste__Item {
+		height: 100%;
+		display: block;
+		min-width: 150px;
+		position: relative;
+		transition-duration: 0.5s;
+	}
+
+	.Navbar__Liste__Item__Link {
+		color: var(--gtt-white);
+	}
+
+		.Navbar__Liste__Item__Link:visited {
+			color: var(--gtt-white);
+		}
+
+	ul li:hover {
+		background-color: #EEEEEE55;
+		color: var(--gtt-white);
+	}
+
+	ul li ul {
+		z-index: 100;
+		background-color: var(--gtt-white);
+		opacity: 0;
+		position: absolute;
+		left: 0;
+		transition: all 0.5s ease;
+		display: none;
+		padding: 0;
+		border: 1px solid var(--gtt-grey);
+		border-radius: 2px;
+	}
+
+	li:focus-within {
+		background-color: #EEEEEE55;
+		color: var(--gtt-blue);
+		cursor: pointer;
+	}
+
+	ul li:hover > ul,
+	ul li ul:hover {
+		visibility: visible;
+		opacity: 1;
+		display: block;
+	}
+
+	ul li ul li {
+		width: 150px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background-color: transparent;
+		color: var(--gtt-blue);
+	}
+
+		ul li ul li .Navbar__Liste__Item__Link {
+			text-align: center;
+			color: var(--gtt-grey);
+		}
+
+		ul li ul li .Navbar__Liste__Item__Link:visited {
+			color: var(--gtt-grey);
+		}
+
+		ul li ul li:hover {
+			background: var(--gtt-lightgrey);
+		}
+
+	ul li ul:hover li {
+		width: 150px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.Navbar__Liste__Item:hover {
+		cursor: pointer;
+	}
+
+	.Navbar__Liste__Item__Link {
+		padding: 15px 20px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 14px;
+		font-weight: 600;
+		font-family: 'Open Sans';
+		text-decoration: none;
+	}
+</style>
+
+@code {
+	private void NaviguerVersAccueil()
+	{
+		navigationManager.NavigateTo("/");
+	}
+}

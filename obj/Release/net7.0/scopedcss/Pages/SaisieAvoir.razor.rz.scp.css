@@ -1,0 +1,140 @@
+.Page[b-7wrx6tuxir] {
+    background-color: #efefef;
+    padding: 20px 40px 20px;
+    height: 100%;
+    height: calc(100vh - 300px);
+}
+
+.Page__Header[b-7wrx6tuxir] {
+    width: 100%;
+    border-radius: 5px;
+    margin-bottom: 24px;
+    border: 1px solid var(--gtt-grey);
+    background-color: white;
+}
+
+.Page__Header__Titre[b-7wrx6tuxir] {
+    padding: 20px;
+    border-bottom: 1px solid var(--gtt-grey);
+}
+
+.Page__Header__Body[b-7wrx6tuxir] {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.Page__Header__Body__Actions[b-7wrx6tuxir] {
+    padding: 20px;
+    display: flex;
+    flex-direction: row;
+    column-gap: 20px;
+}
+
+.Page__Header__Formulaire[b-7wrx6tuxir] {
+    padding: 20px;
+    display: flex;
+    column-gap: 20px;
+    width: 80%;
+}
+
+.Page__Header__Formulaire__Gauche[b-7wrx6tuxir] {
+    display: flex;
+    align-items: center;
+}
+
+.Page__Header__Formulaire__Droite[b-7wrx6tuxir] {
+    display: flex;
+    align-items: center;
+}
+
+.Page__Header__Actions[b-7wrx6tuxir] {
+    background-color: darkred;
+}
+
+.Page__Tableau[b-7wrx6tuxir] {
+    border: 1px solid var(--gtt-grey);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.PopupAvoir__Contenu[b-7wrx6tuxir] {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 30px 50px 20px;
+}
+
+.PopupAvoir__Contenu__Haut[b-7wrx6tuxir] {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    column-gap: 40px;
+    align-items: flex-start;
+}
+
+.PopupAvoir__Contenu__Soumission[b-7wrx6tuxir] {
+    margin-top: 30px;
+}
+
+.PopupAvoir__Contenu__Soumission__Item[b-7wrx6tuxir] {
+    width: 100%;
+}
+
+.PopupAvoir__Formulaire[b-7wrx6tuxir] {
+    width: calc(50% - 20px);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.PopupAvoir__Formulaire__Item[b-7wrx6tuxir] {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 30px;
+}
+
+.PopupAvoir__Formulaire__Item__FileInput[b-7wrx6tuxir] {
+    padding: 5px 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--gtt-amber);
+    cursor: pointer;
+    font-weight: bold;
+    color: var(--gtt-black);
+}
+
+.PopupAvoir__Formulaire__Item__File[b-7wrx6tuxir] {
+    padding: 4px 8px;
+    background-color: var(--gtt-lightgrey);
+}
+
+.PopupAvoir__Remboursements[b-7wrx6tuxir] {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+}
+
+.PopupAvoir__Remboursements__Nombre[b-7wrx6tuxir] {
+    margin-bottom: 20px;
+}
+
+.PopupAvoir__Remboursements__Liste[b-7wrx6tuxir] {
+    display: flex;
+    flex-direction: column;
+    row-gap: 10px;
+}
+
+.PopupAvoir__Remboursements__Liste__Item[b-7wrx6tuxir] {
+    display: flex;
+    flex-direction: row;
+    column-gap: 10px;
+}
+
+.PopupAvoir__Remboursements__Liste__Total[b-7wrx6tuxir] {
+    margin-top: 20px;
+}

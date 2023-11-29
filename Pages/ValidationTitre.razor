@@ -1,0 +1,555 @@
+﻿@page "/validation-titre"
+
+
+@inject ICompagnieService compagnieService
+@inject IFichierService fichierService
+@inject IAgenceDeVoyageService agenceDeVoyageService
+@inject IClasseVoyageService classeVoyageService
+@inject IFicheDeMissionService ficheDeMissionService
+@inject INotificationUIService notificationUIService
+@inject IValidationTitreService validationTitreService
+
+@inject IJSRuntime JS
+
+<SfDialog Height="1000px" Width="1200px" ShowCloseIcon IsModal @bind-Visible="SiPopupConsultationVisible">
+	<DialogTemplates>
+		<Header>
+			<div class="ModalHeader">
+				<div class="ModalHeader__Title GTT_Titre2">Consultation du titre de transport</div>
+				<div class="ModalHeader__Subtitle GTT_Body16">Vérifiez les informations et validez ou non le titre de transport saisi.</div>
+			</div>
+		</Header>
+		<Content>
+				<div class="ModalContent">
+					<div class="ModalContent__Form">
+						<div class="ModalContent__Form__Item">
+							<label class="ModalContent__Form__Item__Label">
+								*N° Fiche de Mission
+							</label>
+							<SfTextBox Readonly Value="@ModelTitre.RefFicheDeMission"></SfTextBox>
+						</div>
+						<div class="ModalContent__Form__Item">
+							<label class="ModalContent__Form__Item__Label">
+								*Référence
+							</label>
+						<SfTextBox Readonly Value="@ModelTitre.RefTitre"></SfTextBox>
+						</div>
+						<div class="ModalContent__Form__Item">
+							<label class="ModalContent__Form__Item__Label">
+								Montant du Titre de Transport
+							</label>
+						<SfNumericTextBox Readonly Value="ModelTitre.MontantTitreDeTransport" Format="N0"></SfNumericTextBox>
+						</div>
+						<div class="ModalContent__Form__Item">
+							<label class="ModalContent__Form__Item__Label">
+								Compagnie
+							</label>
+							<SfDropDownList Readonly TItem="Compagnie" TValue="int?" Value="@ModelTitre.IDCompagnie" PopupHeight="230px" Placeholder="ASKY..." DataSource="@Compagnies">
+								<DropDownListFieldSettings Text="Libellecompagnie" Value="Idcompagnie" />
+							</SfDropDownList>
+						</div>
+						<div class="ModalContent__Form__Item">
+							<label class="ModalContent__Form__Item__Label">
+								Prestataire
+							</label>
+							<SfDropDownList Readonly TItem="Agencevoyage" TValue="int?" Value="@ModelTitre.IDAgenceVoyage" PopupHeight="230px" Placeholder="ASKY..." DataSource="@AgencesDeVoyages">
+							<DropDownListFieldSettings Text="Libelleagencevoyage" Value="Idagencevoyage" />
+							</SfDropDownList>
+						</div>
+						<div class="ModalContent__Form__Item">
+							<label class="ModalContent__Form__Item__Label">
+								Classe
+							</label>
+							<SfDropDownList Readonly TItem="Classevoyage" TValue="int?" Value="@ModelTitre.IDClasse" PopupHeight="230px" Placeholder="AFFAIRES..." DataSource="@ClassesDeVoyage">
+								<DropDownListFieldSettings Text="Libelleclasse" Value="Idclasse" />
+							</SfDropDownList>
+						</div>
+						<div class="ModalContent__Form__Item">
+							<label class="ModalContent__Form__Item__Label">
+								Pièces Jointes
+							</label>
+							<div class="ModalContent__Form__Item__Files">
+								@{
+									var indexFichier = 1;
+									foreach (var fichier in ModelFichiersJoints)
+									{
+										var nomFichierAfficher = $"{fichier.Nom}";
+										<div class="GTT_PieceJointe">
+											<img src="/images/pdf.svg" width="48" height="48" />
+										<span class="GTT_PieceJointe__Label">@nomFichierAfficher</span>
+											<div class="GTT_PieceJointe__Actions">
+												<div @onclick="() => AfficherFichierSurNouvellePage(fichier.CheminAbsolu, nomFichierAfficher)" class="GTT_Icon_Button GTT_Icon_Button_Eye">
+													<img src="/images/eye_icon_bouton.svg" width="24" height="24" />
+												</div>
+											</div>
+										</div>
+										indexFichier++;
+									}
+								}
+							</div>
+						</div>
+						<div class="ModalContent__Form__Item">
+							<label class="ModalContent__Form__Item__Label">
+								Observations
+							</label>
+							<SfTextBox Multiline=true Readonly Placeholder="Entrez une orservation ici..." Value="@ModelTitre.Observation"></SfTextBox>
+						</div>
+					@{
+						if (Statut != "Valides")
+						{
+							<button @onclick="OuvrirPopupValiderTitre" class="GTTbutton GTT_Button_Validation">
+								Valider
+							</button>
+							<button @onclick="OuvrirModalRenvoiTitreDeTransport" class="GTTbutton GTT_Button_Danger">
+								Renvoyer
+							</button>
+						}
+					}
+					</div>
+					<div class="ModalContent__Right">
+							@{
+								if (DetailsFicheDeMission != null)
+								{
+						<div class="ModalContent__Right__Fiche">
+
+									<div class="ModalContent__Right__Header">
+										<div class="GTT_Titre6 ModalContent__Right__Header__Title ">Détails de la mission</div>
+									</div>
+									<div class="ModalContent__Right__Content">
+										<div class="ModalContent__Right__Content__Beneficiaire GTT_Titre2">
+											@DetailsFicheDeMission?.NomAgentBeneficiaire
+										</div>
+										<div class="ModalContent__Right__Content__Objet GTT_Body16">
+											@DetailsFicheDeMission?.ObjetMission
+										</div>
+										<div class="ModalContent__Right__Content__Item">
+											<div class="ModalContent__Right__Content__Item__Label GTT_Body12">Routing (Itinéraire) :</div>
+											<div class="ModalContent__Right__Content__Item__Value GTT_Body14">@DetailsFicheDeMission?.Routing</div>
+										</div>
+										<div class="ModalContent__Right__Content__Item">
+											<div class="ModalContent__Right__Content__Item__Label GTT_Body12">Date départ :</div>
+											<div class="ModalContent__Right__Content__Item__Value GTT_Body14">@DetailsFicheDeMission?.DateDeDepartVoyage</div>
+										</div>
+										<div class="ModalContent__Right__Content__Item">
+											<div class="ModalContent__Right__Content__Item__Label GTT_Body12">Date retour :</div>
+											<div class="ModalContent__Right__Content__Item__Value GTT_Body14">@DetailsFicheDeMission?.DateRetourVoyage</div>
+										</div>
+										<div class="ModalContent__Right__Content__Item">
+											<div class="ModalContent__Right__Content__Item__Label GTT_Body12">Compagnie :</div>
+											<div class="ModalContent__Right__Content__Item__Value GTT_Body14">@DetailsFicheDeMission?.NomCompagnie</div>
+										</div>
+										<div class="ModalContent__Right__Content__Item">
+											<div class="ModalContent__Right__Content__Item__Label GTT_Body12">Classe :</div>
+											<div class="ModalContent__Right__Content__Item__Value GTT_Body14">@DetailsFicheDeMission?.Classe</div>
+										</div>
+										<div class="ModalContent__Right__Content__Item">
+											<div class="ModalContent__Right__Content__Item__Label GTT_Body12">Montant :</div>
+											<div class="ModalContent__Right__Content__Item__Value GTT_Body14">@DetailsFicheDeMission?.MontantDuBillet FCFA</div>
+										</div>
+									</div>
+								</div>
+								}
+							}
+					</div>
+				</div>
+		</Content>
+	</DialogTemplates>
+	<DialogEvents OnClose="@EffaacerFormulaireConsulation" />
+</SfDialog>
+<SfDialog Width="500" ShowCloseIcon IsModal @bind-Visible="SiRenvoiTitreModalVisible">
+	<DialogTemplates>
+		<Header>
+			<div class="ModalHeader">
+				<div class="ModalHeader__Title GTT_Titre2">Renvoi du titre de transport</div>
+			</div>
+		</Header>
+		<Content>
+			<EditForm Model="ModelRenvoiTitre" OnValidSubmit="RenvoyerTitreDeTransport">
+				<DataAnnotationsValidator />
+				<div class="ModalRenvoi__Form">
+					<div class="ModalRenvoi__Form__Item">
+						<label class="ModalRenvoi__Form__Item__Label">
+							Motif de renvoi
+						</label>
+						<SfTextBox Multiline=true Placeholder="Entrez le motif de renvoi ici..." @bind-Value="@ModelRenvoiTitre.MotifDeRenvoi"></SfTextBox>
+						<ValidationMessage For="@(() => ModelRenvoiTitre.MotifDeRenvoi)" />
+					</div>
+					<button type="submit" class="GTTbutton GTT_Button_Danger">
+						Renvoyer à l'étape précédente.
+					</button>
+				</div>
+			</EditForm>
+		</Content>
+	</DialogTemplates>
+	<DialogEvents OnClose="@EffacerFormulaireRenvoi" />
+</SfDialog>
+
+<Modal Titre="Envoyer pour validation"
+	   Description="Souhaitez-vous envoyer le(s) titre(s) de transport à l'étape supérieure ?"
+	   SiModalVisible="SiPopupEnvoiTitreMultipleVisible"
+	   OnPositiveClickCallback="@EnvoyerTitreAETapeSuperieure"
+	   OnNegativeClickCallback="@AnnulerEnvoyerTitreAETapeSuperieure" />
+<Modal Titre="Validation"
+	   Description="Souhaitez-vous valider le titre de transport saisi ?"
+	   SiModalVisible="SiPopupValiderTitreVisible"
+	   OnPositiveClickCallback="@ValiderTitre"
+	   OnNegativeClickCallback="@AnnulerValiderTitre" />
+<Modal Titre="Validation"
+	   Description="Souhaitez-vous valider le(s) titre(s) de transport saisi(s) ?"
+	   SiModalVisible="SiPopupValiderMultipleTitre"
+	   OnPositiveClickCallback="@ValiderTitreMultiple"
+	   OnNegativeClickCallback="@AnnulerValiderMultipleTitre" />
+
+<div class="Page">
+	<div class="Page__Header">
+		<div class="Page__Header__Titre GTT_Titre3">Validation des titres de transport</div>
+		<div class="Page__Header__Body">
+			<form class="Page__Header__Formulaire" @onsubmit="RafraichirListeTitre" method="POST">
+					<div style="display: flex; 
+								flex-direction: row; 
+								align-items: center;
+								column-gap: 20px;
+								">
+							<SfRadioButton @onchange="RafraichirListeTitre" Label="En traitement" Name="Status" Value="EnCours" @bind-Checked="Statut"></SfRadioButton>
+							<SfRadioButton @onchange="RafraichirListeTitre" Label="Validés" Name="Status" Value="Valides" @bind-Checked="Statut"></SfRadioButton>
+					</div>
+					<SfTextBox Width="200px" Placeholder="Rechercher" ID="TermeDeRecherche" @bind-Value="TermeDeRecherche"></SfTextBox>
+					<div style="display: flex; align-items: center; column-gap: 20px;">
+						<div>Du</div>
+						<SfDatePicker Width="140px" TValue="DateTime?" @bind-Value="@DateDebut"></SfDatePicker>
+						<div>Au</div>
+						<SfDatePicker Width="140px" TValue="DateTime?" @bind-Value="@DateFin"></SfDatePicker>
+					</div>
+					<SfButton IsPrimary type="submit">Rafraichir</SfButton>
+			</form>
+			<div class="Page__Header__Body__Actions">
+				@if(Statut == "EnCours"){
+					<button @onclick="OuvrirPopupValidationTitreDeTransportMultiple" disabled="@(ListeIDTitreSelectionnes.Count < 1)" class="GTTbutton GTT_Button_Neutre">
+						Valider
+					</button>
+				}
+				@if(Statut == "Valides"){
+					<button @onclick="OuvrirPopupEnvoiTitreMultipleDeTransport" disabled="@(ListeIDTitreSelectionnes.Count < 1)" class="GTTbutton GTT_Button_Neutre">
+						Envoyer
+					</button>
+				}
+			</div>
+		</div>
+	</div>
+	<div class="Page__Tableau">
+		<SfGrid DataSource="@ListeDesTitresDeTransport" TValue="AffichageTitre" RowHeight="60">
+			<GridSelectionSettings CheckboxOnly></GridSelectionSettings>
+			<GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
+			<GridEvents RowSelected="RowSelectHandler" RowDeselected="@RowDeselectHandler" TValue="AffichageTitre"></GridEvents>
+			<GridColumns>
+				<GridColumn Type="ColumnType.CheckBox" Width="50"></GridColumn>
+				<GridColumn Field="@nameof(AffichageTitre.DateSaisiTitre)" HeaderText="Date & Heure de saisie" Width="200">
+					<Template>
+						@{
+							var Details = context as AffichageTitre;
+							<div>@(Details.DateSaisiTitre.ToString("dd MMMM yyyy HH:mm"))</div>
+						}
+					</Template>
+				</GridColumn>
+				<GridColumn Field=@nameof(AffichageTitre.RefFicheMission) HeaderText="FICHE DE MISSION" TextAlign="TextAlign.Left" Width="200"></GridColumn>
+				<GridColumn Field=@nameof(AffichageTitre.RefTitre) HeaderText="REFERENCE" TextAlign="TextAlign.Left" Width="120"></GridColumn>
+				<GridColumn Field=@nameof(AffichageTitre.Routing) HeaderText="ROUTING" Width="300" TextAlign="TextAlign.Left"></GridColumn>
+				<GridColumn Field=@nameof(AffichageTitre.AgenceVoyage) Width="160" HeaderText="AGENCE" TextAlign="TextAlign.Left"></GridColumn>
+				<GridColumn Field=@nameof(AffichageTitre.Compagnie) Width="160" HeaderText="COMPAGNIE" TextAlign="TextAlign.Left"></GridColumn>
+				<GridColumn Field=@nameof(AffichageTitre.Montant) Format="N0" Width="160" HeaderText="MONTANT" TextAlign="TextAlign.Left"></GridColumn>
+				<GridColumn Field=@nameof(AffichageTitre.Observation) HeaderText="OBSERVATION" TextAlign="TextAlign.Left"></GridColumn>
+			<GridColumn HeaderText="ACTIONS" TextAlign="TextAlign.Left">
+				<Template>
+					@{
+						var Details = (context as AffichageTitre);
+						<div style="display: flex; column-gap: 20px;">
+							<button @onclick="@(()=> RowAfficherPopupConsultation(Details.IDTitre))"  class="GTT_Icon_Button GTT_Icon_Button_Eye">
+								<img src="/images/eye_icon_bouton.svg" width="24" height="24" />
+							</button>
+						</div>
+					}
+				</Template>
+			</GridColumn>
+			<GridTemplates>
+				<EmptyRecordTemplate Context="contextNoRecord">
+					<EspaceVide />
+				</EmptyRecordTemplate>
+			</GridTemplates>
+		</GridColumns>
+		</SfGrid>
+	</div>
+</div>
+
+@code {
+	private bool SiPopupSaisieVisible {get; set; } = false;
+	private bool SiEnvoiTitreModalVisible { get; set; } = false;
+	private bool SiRenvoiTitreModalVisible { get; set; } = false;
+	private bool SiPopupConsultationVisible { get; set; } = false;
+	private bool SiPopupValiderTitreVisible { get; set; } = false;
+	private bool SiPopupValiderMultipleTitre { get; set; } = false;
+	private bool SiPopupEnvoiTitreMultipleVisible { get; set; } = false;
+
+	private int IDTitreEncours = 0;
+	private List<int> ListeIDTitreSelectionnes = new List<int>();
+
+	private RenvoiModel ModelRenvoiTitre = new RenvoiModel();
+	private List<Compagnie>? Compagnies;
+	private List<Agencevoyage>? AgencesDeVoyages;
+	private List<Classevoyage>? ClassesDeVoyage;
+	private AffichageMission DetailsFicheDeMission = null;
+
+	private CreerTitreDeTransportModel ModelTitre = new CreerTitreDeTransportModel();
+	private List<FichierAfficher> ModelFichiersJoints = new List<FichierAfficher>();
+
+	private string Statut = "EnCours";
+	private string TermeDeRecherche { get; set; } = String.Empty;
+	private List<AffichageTitre>? ListeDesTitresDeTransport;
+	private DateTime? DateFin { get; set; } = DateTime.Now.AddDays(20);
+	private DateTime? DateDebut { get; set; } = DateTime.Now.AddDays(-20);
+
+
+
+	protected async override Task OnInitializedAsync()
+	{
+		Compagnies = await compagnieService.ObtenirCompagnies();
+		ClassesDeVoyage = await classeVoyageService.ObtenirClassesVoyage();
+		AgencesDeVoyages = await agenceDeVoyageService.ObtenirAgencesDeVoyages();
+
+		await RafraichirListeTitre();
+	}
+
+	private async Task RafraichirListeTitre()
+	{
+		ListeIDTitreSelectionnes.Clear();
+		ListeDesTitresDeTransport = await validationTitreService.ObtenirListeTitre(new ValiderTitreRechercheModel()
+			{
+				DateFin = DateFin,
+				DateDebut = DateDebut,
+				TermeDeRecherche = TermeDeRecherche,
+				EnCours = Statut == "EnCours",
+				Valides = Statut == "Valides",
+			});
+	}
+
+	private void AfficherMessageErreur(Exception exception)
+	{
+		notificationUIService.CacherChargement();
+		notificationUIService.AfficherMessage(new NotificationData()
+			{
+				Message = exception.Message,
+				TypeMessage = TypeDeNotification.Erreur
+			});
+	}
+
+	private async void RowAfficherPopupConsultation(int IDTitre)
+	{
+		try {
+			IDTitreEncours = IDTitre;
+			notificationUIService.MontrerChargement();
+			var Resultat = await validationTitreService.ObtenirDetailsTitre(IDTitre);
+
+			DetailsFicheDeMission = await ficheDeMissionService.GetFicheDeMission(Resultat.RefFicheDeMission);
+
+			ModelTitre.RefFicheDeMission = Resultat.RefFicheDeMission;
+			ModelTitre.RefTitre = Resultat.RefTitre;
+			ModelTitre.MontantTitreDeTransport = (decimal)Resultat.MontantTitreDeTransport;
+			ModelTitre.Observation = Resultat.Observation;
+			ModelTitre.IDAgenceVoyage = Resultat.IDAgenceVoyage;
+			ModelTitre.IDCompagnie = Resultat.IDCompagnie;
+			ModelTitre.IDClasse = Resultat.IDClasse;
+
+			ModelFichiersJoints = Resultat.ListePiecesJointes;
+			SiPopupConsultationVisible = true;
+			notificationUIService.CacherChargement();
+			StateHasChanged();
+		}catch(Exception exception)
+		{
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void OuvrirPopupValidationTitreDeTransportMultiple()
+	{
+		SiPopupValiderMultipleTitre = true;
+	}
+
+	private void OuvrirPopupEnvoiTitreMultipleDeTransport(){
+		SiPopupEnvoiTitreMultipleVisible = true;
+	}
+
+	private void OuvrirModalRenvoiTitreDeTransport()
+	{
+		SiRenvoiTitreModalVisible = true;
+	}
+
+	private void RowSelectHandler(RowSelectEventArgs<AffichageTitre> args)
+	{
+		if (args.IsInteracted)
+		{
+			ListeIDTitreSelectionnes.Add(args.Data.IDTitre);
+		}
+		if (args.IsHeaderCheckboxClicked)
+		{
+			ListeIDTitreSelectionnes.Clear();
+			ListeIDTitreSelectionnes.AddRange(ListeDesTitresDeTransport.Select(t => t.IDTitre));
+		}
+	}
+
+	private void RowDeselectHandler(RowDeselectEventArgs<AffichageTitre> args)
+	{
+		if (args.IsInteracted)
+		{
+			ListeIDTitreSelectionnes.Remove(args.Data.IDTitre);
+		}
+		if (args.IsHeaderCheckboxClicked)
+		{
+			ListeIDTitreSelectionnes.Clear();
+		}
+	}
+
+	private async void AfficherFichierSurNouvellePage(string CheminAbsoluFichier, string NomFichier)
+	{
+		FileStream StreamFichier = new FileStream(CheminAbsoluFichier, System.IO.FileMode.Open, System.IO.FileAccess.Read);
+		MemoryStream stream = new MemoryStream();
+		StreamFichier.CopyTo(stream);
+		byte[] byteArray = stream.ToArray();
+		await JS.InvokeAsync<object>("openStreamInNewWindow", Convert.ToBase64String(byteArray), NomFichier);
+	}
+
+	private void OuvrirPopupValiderTitre()
+	{
+		SiPopupValiderTitreVisible = true;
+	}
+
+	private async void ValiderTitre()
+	{
+		try
+		{
+			notificationUIService.MontrerChargement();
+			await validationTitreService.ValiderTitre(IDTitreEncours);
+
+
+			notificationUIService.AfficherMessage(new NotificationData()
+			{
+				Message= "Titre validé avec succès.",
+				TypeMessage = TypeDeNotification.Succes
+			});
+
+			notificationUIService.CacherChargement();
+			SiPopupValiderTitreVisible = false;
+			SiPopupConsultationVisible = false;
+
+			await RafraichirListeTitre();
+			IDTitreEncours = 0;
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void AnnulerValiderTitre()
+	{
+		SiPopupValiderTitreVisible = false;
+	}
+
+	private async void ValiderTitreMultiple()
+	{
+		try {
+			notificationUIService.MontrerChargement();
+			await validationTitreService.ValiderTitre(ListeIDTitreSelectionnes);
+
+			notificationUIService.AfficherMessage(new NotificationData()
+			{
+				Message= "Titre(s) validé(s) avec succès.",
+				TypeMessage = TypeDeNotification.Succes
+			});
+
+			notificationUIService.CacherChargement();
+			SiPopupValiderMultipleTitre = false;
+
+			ListeIDTitreSelectionnes.Clear();
+			await RafraichirListeTitre();
+			StateHasChanged();
+		}catch(Exception exception){
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void AnnulerValiderMultipleTitre()
+	{
+		SiPopupValiderMultipleTitre = false;
+	}
+
+	private void EffacerFormulaireRenvoi()
+	{
+		ModelRenvoiTitre = new RenvoiModel();
+	}
+
+	private void EffaacerFormulaireConsulation()
+	{
+		ModelFichiersJoints.Clear();
+		ModelRenvoiTitre = new RenvoiModel();
+	}
+
+	private async void RenvoyerTitreDeTransport()
+	{
+		try
+		{
+			notificationUIService.MontrerChargement();
+
+			await validationTitreService.RenvoyerTitre(IDTitreEncours, ModelRenvoiTitre.MotifDeRenvoi);
+			notificationUIService.AfficherMessage(new NotificationData(){
+				Message = "Titre de transport renvoyé avec succès.",
+				TypeMessage = TypeDeNotification.Succes
+			});
+			SiRenvoiTitreModalVisible = false;
+			SiPopupConsultationVisible = false;
+			IDTitreEncours = 0;
+			notificationUIService.CacherChargement();
+			await RafraichirListeTitre();
+			StateHasChanged();
+		}catch(Exception exception)
+		{
+			notificationUIService.CacherChargement();
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private async void EnvoyerTitreAETapeSuperieure()
+	{
+		try
+		{
+			if (ListeIDTitreSelectionnes.Count == 0)
+			{
+				return;
+			}
+
+			notificationUIService.MontrerChargement();
+			await validationTitreService.EnvoyerTitreEtapeSup(ListeIDTitreSelectionnes);
+
+			notificationUIService.AfficherMessage(new NotificationData()
+				{
+					Message = "Titre envoyé à l'étape supérieure.",
+					TypeMessage = TypeDeNotification.Succes
+				});
+
+		
+			notificationUIService.CacherChargement();
+			SiPopupEnvoiTitreMultipleVisible = false;
+			await RafraichirListeTitre();
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			notificationUIService.CacherChargement();
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void AnnulerEnvoyerTitreAETapeSuperieure()
+	{
+		SiPopupEnvoiTitreMultipleVisible = false;
+	}
+}

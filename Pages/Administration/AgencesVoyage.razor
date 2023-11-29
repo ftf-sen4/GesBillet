@@ -1,0 +1,327 @@
+﻿@page "/administration/agences-de-voyage"
+@layout AdministrationLayout
+@inject ICompagnieService compagnieService
+@inject IAgenceDeVoyageService agenceDeVoyageService
+@inject IGestionAgenceService gestionAgenceService
+@inject INotificationUIService notificationUIService
+
+<SfDialog Height="400" Width="500" ShowCloseIcon IsModal @bind-Visible="SiPopupSaisieVisible">
+	<DialogTemplates>
+		<Header>
+			<div class="PopupAgence__EnTete">
+				<div class="GTT_Titre2">Créer une Agence</div>
+				<div class="GTT_Body16">Remplissez le formulaire pour créer une agence.</div>
+			</div>
+		</Header>
+		<Content>
+			<div class="PopupAgence__Contenu">
+				<div class="PopupAgence__Formulaire">
+					<EditForm OnSubmit="@CreerAgenceVoyage" Model="ModelAgence">
+						<DataAnnotationsValidator />
+						<div class="PopupAgence__Formulaire__Item">
+							<label class="PopupAgence__Formulaire__Item__Label">
+								Libellé Agence
+							</label>
+							<SfTextBox Placeholder="Entrez le libellé de l'agence..." @bind-Value="ModelAgence.LibelleAgence"></SfTextBox>
+							<ValidationMessage For="@(() => ModelAgence.LibelleAgence)" />
+						</div>
+						<button class="GTTbutton GTT_Button_Positive PopupAgence__Formulaire__Submit">
+							Enregistrer
+						</button>
+					</EditForm>
+				</div>
+			</div>
+		</Content>
+	</DialogTemplates>
+	<DialogEvents OnClose="@EffacerFormulaireCreation" />
+</SfDialog>
+<SfDialog Height="400" Width="500" ShowCloseIcon IsModal @bind-Visible="SiPopupModificationVisible">
+	<DialogTemplates>
+		<Header>
+			<div class="PopupAgence__EnTete">
+				<div class="GTT_Titre2">Modifier une Agence</div>
+				<div class="GTT_Body16">Remplissez le formulaire pour modifier une agence.</div>
+			</div>
+		</Header>
+		<Content>
+			<div class="PopupAgence__Contenu">
+				<div class="PopupAgence__Formulaire">
+					<EditForm OnSubmit="@ModifierAgenceVoyage" Model="ModelAgence">
+						<DataAnnotationsValidator />
+						<div class="PopupAgence__Formulaire__Item">
+							<label class="PopupAgence__Formulaire__Item__Label">
+								Libellé Agence
+							</label>
+							<SfTextBox Placeholder="Entrez le libellé de l'agence..." @bind-Value="ModelAgence.LibelleAgence"></SfTextBox>
+							<ValidationMessage For="@(() => ModelAgence.LibelleAgence)" />
+						</div>
+						<button class="GTTbutton GTT_Button_Positive PopupAgence__Formulaire__Submit">
+							Enregistrer
+						</button>
+					</EditForm>
+				</div>
+			</div>
+		</Content>
+	</DialogTemplates>
+	<DialogEvents OnClose="@EffacerFormulaireModification" />
+</SfDialog>
+
+<Modal Titre="Suppression"
+	   Description="Souhaitez-vous supprimer l'agence ?"
+	   SiModalVisible="SiPopupSupprimerAgenceVisible"
+	   OnPositiveClickCallback="@SupprimerAgenceVisible"
+	   OnNegativeClickCallback="@AnnulerSupprimerAgenceVisible" />
+
+
+<div class="Page">
+	<div class="Page__Header">
+		<div class="Page__Header__Titre GTT_Titre3">Gestion des Agences</div>
+		<div class="Page__Header__Body">
+			<form class="Page__Header__Formulaire" @onsubmit="RafraichirListeAgences" method="POST">
+				<SfTextBox Width="200px" Placeholder="Rechercher" ID="TermeDeRecherche" @bind-Value="TermeDeRecherche"></SfTextBox>
+				<SfButton IsPrimary type="submit">Rafraichir</SfButton>
+			</form>
+			<div class="Page__Header__Body__Actions">
+				<button @onclick="OuvrirPopupCreerAgence" disabled="@SiPopupSaisieVisible" class="GTTbutton GTT_Button_Positive">
+					Nouvelle Agence
+				</button>
+			</div>
+		</div>
+	</div>
+	<div class="Page__Tableau">
+		<SfGrid DataSource="@ListeAgences" TValue="AffichageAgence" RowHeight="60">
+			<GridSelectionSettings CheckboxOnly></GridSelectionSettings>
+			<GridEvents RowSelected="RowSelectHandlerAgence" RowDeselected="@RowDeselectHandlerAgence" TValue="AffichageAgence"></GridEvents>
+			<GridColumns>
+				<GridColumn Type="ColumnType.CheckBox" Width="50"></GridColumn>
+				<GridColumn Field=@nameof(AffichageAgence.Libelleagencevoyage) HeaderText="Libellé Agence" TextAlign="TextAlign.Left" Width="200"></GridColumn>
+				<GridColumn Field="@nameof(AffichageAgence.Dateagentenragencevoyage)" HeaderText="Date & Heure de saisie" Width="200">
+					<Template>
+						@{
+							var Details = context as AffichageAgence;
+							<div>@(Details.Dateagentenragencevoyage.ToString("dd MMMM yyyy HH:mm"))</div>
+						}
+					</Template>
+				</GridColumn>
+				<GridColumn HeaderText="Actions" TextAlign="TextAlign.Left" Width="200">
+					<Template>
+						@{
+							var Details = (context as AffichageAgence);
+							<div style="display: flex; column-gap: 20px;">
+								<button @onclick="@(()=> RowOuvrirPopupModificationAgence(Details.Idagencevoyage))" class="GTT_Icon_Button GTT_Icon_Button_Pencil">
+									<img src="/images/pencil_icon_bouton.svg" width="24" height="24" />
+								</button>
+								@*<button @onclick="@(()=> RowOuvrirPopupSuppressionAgence(Details.Idagencevoyage))" class="GTT_Icon_Button GTT_Icon_Button_Trash">
+									<img src="/images/trash_icon_bouton.svg" width="24" height="24" />
+								</button>*@
+							</div>
+						}
+					</Template>
+				</GridColumn>
+				<GridTemplates>
+					<EmptyRecordTemplate Context="contextNoRecord">
+						<EspaceVide Contenu="Ajoutez une Agence pour voir apparaître des éléments dans la liste." />
+					</EmptyRecordTemplate>
+				</GridTemplates>
+			</GridColumns>
+		</SfGrid>
+	</div>
+</div>
+
+@code {
+	private bool SiPopupSaisieVisible { get; set; } = false;
+	private bool SiPopupModificationVisible { get; set; } = false;
+	private bool SiPopupSupprimerAgenceVisible { get; set; } = false;
+
+	private int IDAgenceAModifier = 0;
+	private int IDAgenceASupprimer = 0;
+
+	private EditContext CreationContext;
+	private EditContext ModificationContext;
+
+	private EditForm? CreationFormRef;
+	private EditForm? ModificationFormRef;
+
+	private CreerAgenceModel ModelAgence = new CreerAgenceModel();
+
+	private string Statut { get; set; } = "EnCours";
+	private List<int> ListeIDAgencesVoyage = new List<int>();
+	private string TermeDeRecherche { get; set; } = String.Empty;
+	private DateTime? DateFin { get; set; } = DateTime.Now.AddDays(20);
+	private DateTime? DateDebut { get; set; } = DateTime.Now.AddDays(-20);
+
+	private List<AffichageAgence> ListeAgences = new List<AffichageAgence>();
+
+	protected async override Task OnInitializedAsync()
+	{
+		await RafraichirListeAgences();
+	}
+
+	private async Task RafraichirListeAgences()
+	{
+		ListeAgences = await gestionAgenceService.ObtenirListeAgence(new RechercheAgenceModel
+		{
+			TermeDeRecherche = TermeDeRecherche
+		});
+	}
+
+	private async void CreerAgenceVoyage()
+	{
+		try
+		{
+			notificationUIService.MontrerChargement();
+
+			await gestionAgenceService.CreerAgence(ModelAgence.LibelleAgence);
+
+			notificationUIService.AfficherMessage(new NotificationData()
+				{
+					Message = "Agence Créée avec succès.",
+					TypeMessage = TypeDeNotification.Succes
+				});
+			notificationUIService.CacherChargement();
+			SiPopupSaisieVisible = false;
+			await RafraichirListeAgences();
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			notificationUIService.CacherChargement();
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private async void ModifierAgenceVoyage()
+	{
+		try
+		{
+			notificationUIService.MontrerChargement();
+
+			await gestionAgenceService.ModifierAgence(IDAgenceAModifier, ModelAgence.LibelleAgence);
+
+			notificationUIService.AfficherMessage(new NotificationData()
+				{
+					Message = "Agence mise à jour avec succès.",
+					TypeMessage = TypeDeNotification.Succes
+				});
+			IDAgenceAModifier = 0;
+			SiPopupModificationVisible = false;
+			notificationUIService.CacherChargement();
+			await RafraichirListeAgences();
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			notificationUIService.CacherChargement();
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void EffacerFormulaireModification()
+	{
+		ModelAgence = new CreerAgenceModel();
+		IDAgenceAModifier = 0;
+	}
+
+	private void OuvrirPopupCreerAgence()
+	{
+		SiPopupSaisieVisible = true;
+	}
+
+	private async void RowOuvrirPopupModificationAgence(int IDAgence)
+	{
+		try
+		{
+			IDAgenceAModifier = IDAgence;
+			notificationUIService.MontrerChargement();
+
+			var Resultat = await gestionAgenceService.ObtenirDetailsAgence(IDAgenceAModifier);
+
+			ModelAgence.LibelleAgence = Resultat.Libelleagencevoyage;
+
+			notificationUIService.CacherChargement();
+			SiPopupModificationVisible = true;
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void RowOuvrirPopupSuppressionAgence(int IDAgence)
+	{
+		IDAgenceASupprimer = IDAgence;
+		SiPopupSupprimerAgenceVisible = true;
+	}
+
+	private void EffacerFormulaireCreation()
+	{
+		ModelAgence = new CreerAgenceModel();
+	}
+
+	private async void SupprimerAgenceVisible()
+	{
+		try
+		{
+			notificationUIService.MontrerChargement();
+
+			await gestionAgenceService.SupprimerAgence(IDAgenceASupprimer);
+
+			notificationUIService.AfficherMessage(new NotificationData()
+				{
+					Message = "Agence supprimée avec Succès",
+					TypeMessage = TypeDeNotification.Succes
+				});
+			SiPopupSupprimerAgenceVisible = false;
+			IDAgenceASupprimer = 0;
+			notificationUIService.CacherChargement();
+			await RafraichirListeAgences();
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			notificationUIService.CacherChargement();
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void AnnulerSupprimerAgenceVisible()
+	{
+		SiPopupSupprimerAgenceVisible = false;
+	}
+
+	private void RowSelectHandlerAgence(RowSelectEventArgs<AffichageAgence> args)
+	{
+		if (args.IsInteracted)
+		{
+			ListeIDAgencesVoyage.Add(args.Data.Idagencevoyage);
+		}
+		if (args.IsHeaderCheckboxClicked)
+		{
+			ListeIDAgencesVoyage.Clear();
+			ListeIDAgencesVoyage.AddRange(ListeAgences.Select(e => e.Idagencevoyage));
+		}
+	}
+
+	private void RowDeselectHandlerAgence(RowDeselectEventArgs<AffichageAgence> args)
+	{
+		if (args.IsInteracted)
+		{
+			ListeIDAgencesVoyage.Remove(args.Data.Idagencevoyage);
+		}
+		if (args.IsHeaderCheckboxClicked)
+		{
+			ListeIDAgencesVoyage.Clear();
+		}
+	}
+
+	private void AfficherMessageErreur(Exception exception)
+	{
+		notificationUIService.CacherChargement();
+		notificationUIService.AfficherMessage(new NotificationData()
+			{
+				Message = exception.Message,
+				TypeMessage = TypeDeNotification.Erreur
+			});
+	}
+}

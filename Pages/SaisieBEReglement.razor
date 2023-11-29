@@ -1,0 +1,896 @@
+﻿@page "/saisie-bereglement"
+@inject ICompagnieService compagnieService
+@inject IAgenceDeVoyageService agenceDeVoyageService
+@inject INotificationUIService notificationUIService
+@inject ISaisieBERService saisieBERService
+@inject IJSRuntime JS
+@inject CreerPDFService creerPDFService
+
+<SfDialog Height="90%" Width="90%" ShowCloseIcon IsModal @bind-Visible="SiPopupSaisieVisible">
+	<DialogTemplates>
+		<Header>
+			<div class="PopupBER__EnTete">
+				<div class="GTT_Titre2">Composer un Bordereau de règlement</div>
+			</div>
+		</Header>
+		<Content>
+			<div class="PopupBER__Contenu">
+				<div class="PopupBER__Contenu__Haut">
+					<div class="PopupBER__Formulaire">
+						<div class="PopupBER__Formulaire__Haut">
+							<div class="PopupBER__Formulaire__Haut__Item">
+								<label class="PopupBER__Formulaire__Item__Label">
+									Agence de voyage
+								</label>
+								<SfDropDownList TItem="Agencevoyage" TValue="int" Value="@ModelBER.IDAgenceVoyage" PopupHeight="230px" DataSource="@AgencesDeVoyages">
+									<DropDownListFieldSettings Text="Libelleagencevoyage" Value="Idagencevoyage" />
+									<DropDownListEvents TItem="Agencevoyage" TValue="int" ValueChange="RafraichirTitreAuto"></DropDownListEvents>
+									<DropDownListTemplates TItem="Agencevoyage">
+										<NoRecordsTemplate>
+											<span>Aucune donnée disponible.</span>
+										</NoRecordsTemplate>
+									</DropDownListTemplates>
+								</SfDropDownList>
+							</div>
+							<div class="PopupBER__Formulaire__Haut__Item">
+								<label class="PopupBER__Formulaire__Item__Label">
+									Nombre de factures
+								</label>
+								<SfNumericTextBox Max="20" Value="@NombreDeFactures" @oninput="ChangerNombreFacture"></SfNumericTextBox>
+							</div>
+							<div class="PopupBER__Formulaire__Haut__Item">
+								<label>
+									Signataire
+								</label>
+								<SfAutoComplete TValue="string" @bind-Value="ModelBER.NomSignataire" TItem="AffichageAgentAutoCompletion" DataSource="@ListeAgents">
+									<AutoCompleteTemplates TItem="AffichageAgentAutoCompletion">
+										<ItemTemplate>
+											<span>@((context as AffichageAgentAutoCompletion).NomAgent)</span>
+										</ItemTemplate>
+										<NoRecordsTemplate>
+											<span>Aucune entrée trouvée</span>
+										</NoRecordsTemplate>
+									</AutoCompleteTemplates>
+									<AutoCompleteFieldSettings Text="NomAgent" Value="NomAgent"></AutoCompleteFieldSettings>
+								</SfAutoComplete>
+							</div>
+						</div>
+						@{
+							if (NombreDeFactures != 0)
+							{
+								<SfTab>
+									<TabItems>
+										@{
+											foreach (var i in Enumerable.Range(0, NombreDeFactures))
+											{
+												var ii = i;
+												var Label = $"Facture {(ii + 1)}";
+
+												<TabItem>
+													<ChildContent>
+														<TabHeader Text="@Label"></TabHeader>
+													</ChildContent>
+													<ContentTemplate>
+														<div class="PopupBER__Formulaire__LigneFacture">
+															<div class="PopupBER__Formulaire__LigneFacture__EnTete">
+																@if (NombreDeFactures > 0)
+																{
+																	<span>@Label</span>
+																}
+															</div>
+															<div class="PopupBER__Formulaire__LigneFacture__Contenu">
+																<div class="PopupBER__Formulaire__LigneFacture__RefFactureItem">
+																	<label class="PopupBER__Formulaire__LigneFacture__Item__Label">
+																		Référence Facture
+																	</label>
+																	<SfTextBox ValueChanged="@((val) => ChangerValeurRefFacture(ii, val))" Value="@ListeFactures[i].RefFacture"></SfTextBox>
+																</div>
+																<div class="PopupBER__Formulaire__LigneFacture__DateEmissionFactureItem">
+																	<label class="PopupAvoir__Formulaire__Item__Label">
+																		Date d'émission
+																	</label>
+																	<SfDatePicker Min='@MinDateTime' Max='@MaxDateTime' TValue="DateTime?" ValueChanged="@((val) => ChangerValeurDateEmission(ii, val))" Value="@ListeFactures[i].DateEmission"></SfDatePicker>
+																</div>
+																<div class="PopupBER__Formulaire__LigneFacture__TitreListItem">
+																	<label class="PopupBER__Formulaire__LigneFacture__Item__Label">
+																		Titres concernés
+																	</label>
+																	<SfMultiSelect AllowFiltering="true" Value="@ListeFactures[i].ListeTitres" TValue="List<AffichageTitreAutoCompletion>" TItem="AffichageTitreAutoCompletion" DataSource="@ListeTitresAutocompletion">
+																		<MultiSelectTemplates TItem="AffichageTitreAutoCompletion">
+																			<ItemTemplate>
+																				<div class="TemplateTitre">
+																					@{
+																						var Details = context as AffichageTitreAutoCompletion;
+																						<div class="TemplateTitre__Nom">@Details.NomBeneficiaire</div>
+																						<div class="TemplateTitre__Ref">Réf: @Details.RefTitre</div>
+																						<div class="TemplateTitre__Routing">Routing : @Details.Routing</div>
+																						<div class="TemplateTitre__Classe">Classe : @Details.ClasseVoyage</div>
+																					}
+																				</div>
+																			</ItemTemplate>
+																			<NoRecordsTemplate>
+																				<span>Aucune entrée trouvée</span>
+																			</NoRecordsTemplate>
+																		</MultiSelectTemplates>
+																		<MultiSelectFieldSettings Text="NomBeneficiaire" Value="IDTitre"></MultiSelectFieldSettings>
+																		<MultiSelectEvents TItem="AffichageTitreAutoCompletion" TValue="List<AffichageTitreAutoCompletion>"
+																						   ValueChange="(e) => ChangerValeurListeTitres(ii, e)"></MultiSelectEvents>
+																	</SfMultiSelect>
+																</div>
+															</div>
+														</div>
+													</ContentTemplate>
+												</TabItem>
+											}
+										}
+									</TabItems>
+								</SfTab>
+							}
+						}
+					</div>
+				</div>
+			</div>
+		</Content>
+		<FooterTemplate>
+			<div class="PopupBER__Contenu__Soumission">
+				@{
+					if(NombreDeFactures > 0){
+						<button @onclick="SoumettreFormulaireCreation" class="GTTbutton GTT_Button_Positive PopupBER__Contenu__Soumission__Item">
+							Enregistrer
+						</button>
+					}
+				}
+			</div>
+		</FooterTemplate>
+	</DialogTemplates>
+	<DialogEvents OnClose="@EffacerFormulaireCreation" />
+</SfDialog>
+<SfDialog Height="90%" Width="90%" ShowCloseIcon IsModal @bind-Visible="SiPopupModificationVisible">
+	<DialogTemplates>
+		<Header>
+			<div class="PopupBER__EnTete">
+				<div class="GTT_Titre2">Modifier LE BE de règlement</div>
+			</div>
+		</Header>
+		<Content>
+			<div class="PopupBER__Contenu">
+				<div class="PopupBER__Contenu__Haut">
+					<div class="PopupBER__Formulaire">
+						@if (!SiModifierBER)
+						{
+							<div style="width: 100%; margin-bottom: 20px">
+								<button @onclick="ActiverModificationBER" class="GTTbutton GTT_Button_Positive">
+									Modifier
+								</button>
+							</div>
+						}
+						<div class="PopupBER__Formulaire__Haut">
+							<div class="PopupBER__Formulaire__Haut__Item">
+								<label class="PopupBER__Formulaire__Item__Label">
+									Agence de voyage
+								</label>
+								<SfDropDownList Readonly="!SiModifierBER" TItem="Agencevoyage" TValue="int" @bind-Value="@ModelBER.IDAgenceVoyage" PopupHeight="230px" DataSource="@AgencesDeVoyages">
+									<DropDownListFieldSettings Text="Libelleagencevoyage" Value="Idagencevoyage" />
+									<DropDownListEvents TItem="Agencevoyage" TValue="int"></DropDownListEvents>
+									<DropDownListTemplates TItem="Agencevoyage">
+										<NoRecordsTemplate>
+											<span>Aucune donnée disponible.</span>
+										</NoRecordsTemplate>
+									</DropDownListTemplates>
+								</SfDropDownList>
+							</div>
+							<div class="PopupBER__Formulaire__Haut__Item">
+								<label class="PopupBER__Formulaire__Item__Label">
+									Nombre de factures
+								</label>
+								<SfNumericTextBox Readonly="!SiModifierBER" Max="20" Value="@NombreDeFactures" @oninput="ChangerNombreFacture"></SfNumericTextBox>
+							</div>
+							<div class="PopupBER__Formulaire__Haut__Item">
+								<label>
+									Signataire
+								</label>
+								@if (SiModifierBER)
+								{
+									<SfAutoComplete Readonly="!SiModifierBER" @bind-Value="ModelBER.NomSignataire" TValue="string" TItem="AffichageAgentAutoCompletion" DataSource="@ListeAgents">
+										<AutoCompleteTemplates TItem="AffichageAgentAutoCompletion">
+											<ItemTemplate>
+												<span>@((context as AffichageAgentAutoCompletion).NomAgent)</span>
+											</ItemTemplate>
+											<NoRecordsTemplate>
+												<span>Aucune entrée trouvée</span>
+											</NoRecordsTemplate>
+										</AutoCompleteTemplates>
+										<AutoCompleteFieldSettings Text="NomAgent" Value="NomAgent"></AutoCompleteFieldSettings>
+									</SfAutoComplete>
+								}
+								else
+								{
+									<SfTextBox Readonly="true" Value="@ModelBER.NomSignataire"></SfTextBox>
+								}
+							</div>
+						</div>
+						@{
+							if (NombreDeFactures != 0)
+							{
+								<SfTab>
+									<TabItems>
+										@{
+											foreach (var i in Enumerable.Range(0, NombreDeFactures))
+											{
+												var ii = i;
+												var Label = $"Facture {(ii + 1)}";
+
+												<TabItem>
+													<ChildContent>
+														<TabHeader Text="@Label"></TabHeader>
+													</ChildContent>
+													<ContentTemplate>
+														<div class="PopupBER__Formulaire__LigneFacture">
+															<div class="PopupBER__Formulaire__LigneFacture__EnTete">
+																@if (NombreDeFactures > 0)
+																{
+																	<span>@Label</span>
+																}
+															</div>
+															<div class="PopupBER__Formulaire__LigneFacture__Contenu">
+																<div class="PopupBER__Formulaire__LigneFacture__RefFactureItem">
+																	<label class="PopupBER__Formulaire__LigneFacture__Item__Label">
+																		Référence Facture
+																	</label>
+																	<SfTextBox ValueChanged="@((val) => ChangerValeurRefFacture(ii, val))" Value="@ListeFactures[i].RefFacture"></SfTextBox>
+																</div>
+																<div class="PopupBER__Formulaire__LigneFacture__DateEmissionFactureItem">
+																	<label class="PopupAvoir__Formulaire__Item__Label">
+																		Date d'émission
+																	</label>
+																	<SfDatePicker Min='@MinDateTime' Max='@MaxDateTime' TValue="DateTime?" ValueChanged="@((val) => ChangerValeurDateEmission(ii, val))" Value="@ListeFactures[i].DateEmission"></SfDatePicker>
+																</div>
+																<div class="PopupBER__Formulaire__LigneFacture__TitreListItem">
+																	<label class="PopupBER__Formulaire__LigneFacture__Item__Label">
+																		Titres concernés
+																	</label>
+																	@{
+																		if(!SiModifierBER){
+																			<SfMultiSelect AllowFiltering="true" Value="@ListeFactures[i].ListeTitres" TValue="List<AffichageTitreAutoCompletion>" TItem="AffichageTitreAutoCompletion" DataSource="@ListeFactures[i].ListeTitres">
+																				<MultiSelectTemplates TItem="AffichageTitreAutoCompletion">
+																					<ItemTemplate>
+																						<div class="TemplateTitre">
+																							@{
+																								var Details = context as AffichageTitreAutoCompletion;
+																								<div class="TemplateTitre__Nom">@Details.NomBeneficiaire</div>
+																								<div class="TemplateTitre__Ref">Réf: @Details.RefTitre</div>
+																								<div class="TemplateTitre__Routing">Routing : @Details.Routing</div>
+																								<div class="TemplateTitre__Classe">Classe : @Details.ClasseVoyage</div>
+																							}
+																						</div>
+																					</ItemTemplate>
+																					<NoRecordsTemplate>
+																						<span>Aucune entrée trouvée</span>
+																					</NoRecordsTemplate>
+																				</MultiSelectTemplates>
+																				<MultiSelectFieldSettings Text="NomBeneficiaire" Value="IDTitre"></MultiSelectFieldSettings>
+																				<MultiSelectEvents TItem="AffichageTitreAutoCompletion" TValue="List<AffichageTitreAutoCompletion>"
+																								   ValueChange="(e) => ChangerValeurListeTitres(ii, e)"></MultiSelectEvents>
+																			</SfMultiSelect>
+																		}else{
+																			<SfMultiSelect AllowFiltering="true" Value="@ListeFactures[i].ListeTitres" TValue="List<AffichageTitreAutoCompletion>" TItem="AffichageTitreAutoCompletion" DataSource="@ListeTitresAutocompletion">
+																				<MultiSelectTemplates TItem="AffichageTitreAutoCompletion">
+																					<ItemTemplate>
+																						<div class="TemplateTitre">
+																							@{
+																								var Details = context as AffichageTitreAutoCompletion;
+																								<div class="TemplateTitre__Nom">@Details.NomBeneficiaire</div>
+																								<div class="TemplateTitre__Ref">Réf: @Details.RefTitre</div>
+																								<div class="TemplateTitre__Routing">Routing : @Details.Routing</div>
+																								<div class="TemplateTitre__Classe">Classe : @Details.ClasseVoyage</div>
+																							}
+																						</div>
+																					</ItemTemplate>
+																					<NoRecordsTemplate>
+																						<span>Aucune entrée trouvée</span>
+																					</NoRecordsTemplate>
+																				</MultiSelectTemplates>
+																				<MultiSelectFieldSettings Text="NomBeneficiaire" Value="IDTitre"></MultiSelectFieldSettings>
+																				<MultiSelectEvents TItem="AffichageTitreAutoCompletion" TValue="List<AffichageTitreAutoCompletion>"
+																								   ValueChange="(e) => ChangerValeurListeTitres(ii, e)"></MultiSelectEvents>
+																			</SfMultiSelect>
+																		}
+																	}
+																	
+																</div>
+															</div>
+														</div>
+													</ContentTemplate>
+												</TabItem>
+											}
+										}
+									</TabItems>
+								</SfTab>
+							}
+						}
+					</div>
+				</div>
+			</div>
+		</Content>
+		<FooterTemplate>
+			<div class="PopupBER__Contenu__Soumission">
+				@{
+					if(NombreDeFactures > 0 && SiModifierBER){
+						<button @onclick="SoumettreFormulaireModification" class="GTTbutton GTT_Button_Positive PopupBER__Contenu__Soumission__Item">
+							Enregistrer
+						</button>
+					}
+				}
+			</div>
+		</FooterTemplate>
+	</DialogTemplates>
+	<DialogEvents OnClose="@EffacerFormulaireModification" />
+</SfDialog>
+
+<Modal Titre="Suppression"
+	   Description="Souhaitez-vous supprimer le BE de règlement?"
+	   SiModalVisible="SiPopupSupprimerBERVisible"
+	   OnPositiveClickCallback="@SupprimerBERVisible"
+	   OnNegativeClickCallback="@AnnulerSupprimerBERVisible" />
+
+@*<Modal Titre="Envoyer pour validation"
+	   Description="Souhaitez-vous envoyer le(s) BE de règlement (s) à l'étape supérieure ?"
+	   SiModalVisible="SiPopupEnvoyerBERVisible"
+	   OnPositiveClickCallback="@EnvoyerBEREnEtapeSuperieure"
+	   OnNegativeClickCallback="@AnnulerEnvoyerBEREnEtapeSuperieure" />
+*@
+
+<div class="Page">
+	<div class="Page__Header">
+		<div class="Page__Header__Titre GTT_Titre3">BE de règlement</div>
+		<div class="Page__Header__Body">
+			<form class="Page__Header__Formulaire" @onsubmit="RafraichirListeBER" method="POST">
+				@*				<div style="display: flex;
+				flex-direction: row;
+				align-items: center;
+				column-gap: 20px;
+				">
+				<SfRadioButton @onchange="RafraichirListeBER" Label="En traitement" Name="Status" Value="EnCours" @bind-Checked="Statut"></SfRadioButton>
+				<SfRadioButton @onchange="RafraichirListeBER" Label="Validés" Name="Status" Value="Valides" @bind-Checked="Statut"></SfRadioButton>
+				<SfRadioButton @onchange="RafraichirListeBER" Label="Rejetés" Name="Status" Value="Rejetes" @bind-Checked="Statut"></SfRadioButton>
+				</div>*@
+				<SfTextBox Width="200px" Placeholder="Rechercher" ID="TermeDeRecherche" @bind-Value="TermeDeRecherche"></SfTextBox>
+				<div style="display: flex; align-items: center; column-gap: 20px;">
+					<div>Du</div>
+					<SfDatePicker Width="140px" TValue="DateTime?" @bind-Value="@DateDebut"></SfDatePicker>
+					<div>Au</div>
+					<SfDatePicker Width="140px" TValue="DateTime?" @bind-Value="@DateFin"></SfDatePicker>
+				</div>
+				<SfButton IsPrimary type="submit">Rafraichir</SfButton>
+			</form>
+			<div class="Page__Header__Body__Actions">
+				@if (Statut != "Valides")
+				{
+					<button @onclick="OuvrirPopupCreerBER" disabled="@SiPopupSaisieVisible" class="GTTbutton GTT_Button_Positive">
+						Nouveau
+					</button>
+					@*	<button @onclick="OuvrirPopupEnvoyerBER" disabled="@(ListeIDBERSelectionnes.Count == 0)" class="GTTbutton GTT_Button_Validation">
+				Envoyer
+				</button>*@
+				}
+			</div>
+		</div>
+	</div>
+	<div class="Page__Tableau">
+		<SfGrid DataSource="@ListeDesBERs" AllowTextWrap TValue="AffichageBER">
+			<GridSelectionSettings CheckboxOnly></GridSelectionSettings>
+			<GridEvents RowSelected="RowSelectHandlerBER" RowDeselected="@RowDeselectHandlerBER" TValue="AffichageBER"></GridEvents>
+			<GridColumns>
+				<GridColumn Type="ColumnType.CheckBox" Width="50"></GridColumn>
+				<GridColumn Field=@nameof(AffichageBER.IDBEReglement) HeaderText="N° BER" TextAlign="TextAlign.Left" Width="120"></GridColumn>
+				<GridColumn Field=@nameof(AffichageBER.LibelleAgenceVoyage) HeaderText="LIBELLE AGENCE" TextAlign="TextAlign.Left" Width="200"></GridColumn>
+				<GridColumn Field="@nameof(AffichageBER.DateSaisie)" HeaderText="DATE ET HEURE DE SAISIE" Width="200">
+					<Template>
+						@{
+							var Details = context as AffichageBER;
+							if (Details.DateSaisie.HasValue)
+							{
+								<div>@(Details.DateSaisie.Value.ToString("dd MMMM yyyy HH:mm"))</div>
+							}
+						}
+					</Template>
+				</GridColumn>
+				<GridColumn Field=@nameof(AffichageBER.Observation) HeaderText="OBSERVATION" TextAlign="TextAlign.Left" Width="200"></GridColumn>
+				<GridColumn HeaderText="ACTIONS" TextAlign="TextAlign.Left">
+					<Template>
+						@{
+							var Details = (context as AffichageBER);
+							<div style="display: flex; column-gap: 20px;">
+								@if (Statut != "Valides")
+								{
+									<button @onclick="@(()=> RowOuvrirPopupModificationBER(Details.IDBEReglement))" class="GTT_Icon_Button GTT_Icon_Button_Pencil">
+										<img src="/images/pencil_icon_bouton.svg" width="24" height="24" />
+									</button>
+									<button @onclick="@(()=> RowOuvrirPopupSuppressionBER(Details.IDBEReglement))" class="GTT_Icon_Button GTT_Icon_Button_Trash">
+										<img src="/images/trash_icon_bouton.svg" width="24" height="24" />
+									</button>
+									<button @onclick="@(()=> RowImprimerBER(Details.IDBEReglement))" class="GTT_Icon_Button GTT_Icon_Button_Print">
+										<img src="/images/print_icon_bouton.svg" width="24" height="24" />
+									</button>
+								}
+								@if (Statut == "Valides")
+								{
+									<button @onclick="@(()=> RowImprimerBER(Details.IDBEReglement))" class="GTT_Icon_Button GTT_Icon_Button_Print">
+										<img src="/images/print_icon_bouton.svg" width="24" height="24" />
+									</button>
+								}
+							</div>
+						}
+					</Template>
+				</GridColumn>
+				<GridTemplates>
+					<EmptyRecordTemplate Context="contextNoRecord">
+						<EspaceVide Contenu="Ajoutez un BER pour voir apparaître des éléments dans la liste." />
+					</EmptyRecordTemplate>
+				</GridTemplates>
+			</GridColumns>
+		</SfGrid>
+	</div>
+</div>
+
+@code {
+	private bool SiPopupSaisieVisible { get; set; } = false;
+	//private bool SiPopupEnvoyerBERVisible { get; set; } = false;
+	private bool SiPopupModificationVisible { get; set; } = false;
+	private bool SiPopupSupprimerBERVisible { get; set; } = false;
+	private bool SiChoisirTitreVisible { get; set; } = false;
+
+	public DateTime MinDateTime { get; set; } = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 7, 0, 0, 0);
+	public DateTime MaxDateTime { get; set; } = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 27, DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Second);
+
+	private bool SiModifierBER { get; set; } = false;
+
+	private int IDBERAModifier { get; set; } = 0;
+	private int IDBERASupprimer { get; set; } = 0;
+	private int NombreDeFactures { get; set; } = 0;
+
+	//private EditContext CreationContext;
+	//private EditContext ModificationContext;
+
+	//private EditForm? CreationFormRef;
+	//private EditForm? ModificationFormRef;
+
+	private List<Agencevoyage>? AgencesDeVoyages;
+	//private AffichageRenvoi DetailsRenvoiBER = new AffichageRenvoi();
+	private CreerBEReglementModelV2 ModelBER = new CreerBEReglementModelV2();
+	private List<AffichageAgentAutoCompletion> ListeAgents = new List<AffichageAgentAutoCompletion>();
+
+	//private bool SiRenvoiBEREnCours = false;
+
+	private string Statut { get; set; } = "EnCours";
+	private string TermeDeRecherche { get; set; } = String.Empty;
+	private DateTime? DateFin { get; set; } = DateTime.Now.AddDays(20);
+	private DateTime? DateDebut { get; set; } = DateTime.Now.AddDays(-20);
+
+	//private string NomPjASupprimer = String.Empty;
+	//private bool SiSupressionPJPopupVisible = false;
+
+
+	private List<int> ListeIDBERSelectionnes = new List<int>();
+	private List<AffichageBER> ListeDesBERs = new List<AffichageBER>();
+	//private List<AffichageFactureAvecPJ> ListeDesFacturesAChoisir = new List<AffichageFactureAvecPJ>();
+	//private List<AffichageFactureAvecPJ> ListeDesFacturesDuBEEnCours = new List<AffichageFactureAvecPJ>();
+
+	private List<BERFactureModel> ListeFactures = new List<BERFactureModel>();
+	private List<AffichageTitreAutoCompletion> ListeTitresAutocompletion = new List<AffichageTitreAutoCompletion>();
+
+
+	protected async override Task OnInitializedAsync()
+	{
+		AgencesDeVoyages = await agenceDeVoyageService.ObtenirAgencesDeVoyages();
+		await RafraichirListeBER();
+	}
+
+	private async Task RafraichirListeBER()
+	{
+		ListeIDBERSelectionnes.Clear();
+		ListeDesBERs = await saisieBERService.ObtenirListeBER(new SaisieBERRechercheModel()
+			{
+				DateFin = DateFin,
+				DateDebut = DateDebut,
+				TermeDeRecherche = TermeDeRecherche,
+				EnCours = Statut == "EnCours",
+				Valides = Statut == "Valides",
+				Rejetes = Statut == "Rejetes"
+			});
+	}
+
+	private async void CreerBER()
+	{
+		try
+		{
+			notificationUIService.MontrerChargement();
+			//await saisieBERService.CreerBEReglement(ModelBER);
+			await saisieBERService.CreerBEReglementV2(ModelBER, ListeFactures);
+			notificationUIService.AfficherMessage(new NotificationData()
+				{
+					Message = "Bordereaux de règlement créé avec succès.",
+					TypeMessage = TypeDeNotification.Succes
+				});
+			notificationUIService.CacherChargement();
+			SiPopupSaisieVisible = false;
+			await RafraichirListeBER();
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			notificationUIService.CacherChargement();
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private async void ModifierBER()
+	{
+		try
+		{
+			notificationUIService.MontrerChargement();
+			await saisieBERService.ModifierBEReglementV2(IDBERAModifier, ModelBER, ListeFactures);
+			notificationUIService.AfficherMessage(new NotificationData()
+				{
+					Message = "BER mise à jour avec succès.",
+					TypeMessage = TypeDeNotification.Succes
+				});
+			IDBERAModifier = 0;
+			//SiRenvoiBEREnCours = false;
+			//DetailsRenvoiBER = new AffichageRenvoi();
+			notificationUIService.CacherChargement();
+			SiPopupModificationVisible = false;
+			await RafraichirListeBER();
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			notificationUIService.CacherChargement();
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void EffacerFormulaireModification()
+	{
+		SiModifierBER = false;
+		ModelBER = new CreerBEReglementModelV2();
+		NombreDeFactures = 0;
+		IDBERAModifier = 0;
+		ListeFactures.Clear();
+		ListeTitresAutocompletion.Clear();
+	}
+
+	//private async void RechercherFacturesAchoisir(Syncfusion.Blazor.DropDowns.ChangeEventArgs<int, Agencevoyage> args)
+	//{
+	//	try
+	//	{
+	//		var IDAgenceDeVoyage = args.Value;
+	//		ModelBER.IDAgenceVoyage = args.Value;
+	//		//ListeDesFacturesAChoisir = await saisieBERService.ObtenirFacturesAChoisir(IDAgenceDeVoyage);
+	//		StateHasChanged();
+	//	}
+	//	catch (Exception exception)
+	//	{
+	//		AfficherMessageErreur(exception);
+	//	}
+	//}
+
+	//private async void RechercherFacturesAchoisirModifier(Syncfusion.Blazor.DropDowns.ChangeEventArgs<int, Agencevoyage> args)
+	//{
+	//	try
+	//	{
+	//		var IDAgenceDeVoyage = args.Value;
+	//		ModelBER.IDAgenceVoyage = args.Value;
+
+	//		//ListeDesFacturesAChoisir = await saisieBERService.ObtenirFacturesAChoisirModifier(IDAgenceDeVoyage);
+	//		StateHasChanged();
+	//	}
+	//	catch (Exception exception)
+	//	{
+	//		AfficherMessageErreur(exception);
+	//	}
+	//}
+
+	private async void OuvrirPopupCreerBER()
+	{
+		SiPopupSaisieVisible = true;
+		ListeAgents = await saisieBERService.ObtenirAgent();
+	}
+
+	private async void RowOuvrirPopupModificationBER(int IDBER)
+	{
+		try
+		{
+			IDBERAModifier = IDBER;
+			notificationUIService.MontrerChargement();
+
+			ListeAgents = await saisieBERService.ObtenirAgent();
+			var Resultat = await saisieBERService.ObtenirDetailsBERV2(IDBER);
+
+			ModelBER.IDAgenceVoyage = Resultat.IDAgenceVoyage;
+			ListeFactures = Resultat.ListeFacture;
+			ModelBER.NomSignataire = Resultat.NomSignataire;
+			NombreDeFactures = Resultat.ListeFacture.Count;
+
+
+			//if (Resultat.IDRenvoi != null)
+			//{
+			//	SiRenvoiBEREnCours = true;
+			//	DetailsRenvoiBER = await saisieBERService.ObtenirDetailsRenvoi((int)Resultat.IDRenvoi);
+			//}
+
+			notificationUIService.CacherChargement();
+			SiPopupModificationVisible = true;
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void RowOuvrirPopupSuppressionBER(int IDBER)
+	{
+		IDBERASupprimer = IDBER;
+		SiPopupSupprimerBERVisible = true;
+	}
+
+	private async void RowImprimerBER(int IDBER)
+	{
+		try
+		{
+			notificationUIService.MontrerChargement();
+
+			ImprimerBERModel ModelAImprimer = await saisieBERService.ObtenirModelBERAImprimer(IDBER);
+			MemoryStream excelStream = creerPDFService.ImprimerBEReglementV2(ModelAImprimer);
+
+			await JS.InvokeAsync<object>(
+						"saveAsFile",
+						"BER.pdf",
+						Convert.ToBase64String(excelStream.ToArray()));
+			notificationUIService.CacherChargement();
+		}
+		catch (Exception exception)
+		{
+			AfficherMessageErreur(exception);
+		}
+
+	}
+
+	private async void RafraichirTitreAuto(Syncfusion.Blazor.DropDowns.ChangeEventArgs<int, Agencevoyage> args)
+	{
+		try
+		{
+			var IDAgenceVoyage = args.Value;
+			ModelBER.IDAgenceVoyage = args.Value;
+			ListeTitresAutocompletion = await saisieBERService.ObtenirTitreAutoCompletion(IDAgenceVoyage);
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	//private void OuvrirPopupEnvoyerBER()
+	//{
+	//	SiPopupEnvoyerBERVisible = true;
+	//}
+
+	private void EffacerFormulaireCreation()
+	{
+		ModelBER = new CreerBEReglementModelV2();
+		NombreDeFactures = 0;
+		ListeFactures.Clear();
+		ListeTitresAutocompletion.Clear();
+	}
+
+	private async void ActiverModificationBER()
+	{
+		SiModifierBER = true;
+		ListeTitresAutocompletion = await saisieBERService.ObtenirTitreAutoCompletionModifier(IDBERAModifier);
+		StateHasChanged();
+	}
+
+	private void SoumettreFormulaireCreation()
+	{
+		var SiReferencesFacturesUniques = ListeFactures.DistinctBy(_ => _.RefFacture).ToList().Count == ListeFactures.Count;
+		var SiReferencesFacturesRemplies = ListeFactures.Select(item => item.RefFacture != null).Aggregate((a, b) => a && b);
+		var SiFacturesTitreRemplies = ListeFactures.Select(item => item.ListeTitres.Count != 0).Aggregate((a, b) => a && b);
+		var SiFacturesDateRemplies = ListeFactures.Select(item => item.DateEmission != new DateTime()).Aggregate((a, b) => a && b);
+
+		if (SiReferencesFacturesUniques && SiFacturesTitreRemplies && SiReferencesFacturesRemplies && SiFacturesDateRemplies
+		&& ModelBER.NomSignataire.Length > 0)
+		{
+			CreerBER();
+		} else
+		{
+			notificationUIService.AfficherMessage(new NotificationData()
+				{
+					Message = "Reverifiez le formulaire",
+					TypeMessage = TypeDeNotification.Info
+				});
+		}
+	}
+
+	private void SoumettreFormulaireModification()
+	{
+		var SiReferencesFacturesUniques = ListeFactures.DistinctBy(_ => _.RefFacture).ToList().Count == ListeFactures.Count;
+		var SiReferencesFacturesRemplies = ListeFactures.Select(item => item.RefFacture != null).Aggregate((a, b) => a && b);
+		var SiFacturesTitreRemplies = ListeFactures.Select(item => item.ListeTitres.Count != 0).Aggregate((a, b) => a && b);
+		var SiFacturesDateRemplies = ListeFactures.Select(item => item.DateEmission != new DateTime()).Aggregate((a, b) => a && b);
+
+		if (SiReferencesFacturesUniques && SiFacturesTitreRemplies && SiReferencesFacturesRemplies && SiFacturesDateRemplies
+		&& ModelBER.NomSignataire.Length > 0) {
+			ModifierBER();
+		} else {
+			notificationUIService.AfficherMessage(new NotificationData()
+				{
+					Message = "Reverifiez le formulaire",
+					TypeMessage = TypeDeNotification.Info
+				});
+		}
+	}
+
+	//private async Task EnvoyerBEREnEtapeSuperieure()
+	//{
+	//	try
+	//	{
+	//		notificationUIService.MontrerChargement();
+	//		await saisieBERService.EnvoyerBEREtapeSup(ListeIDBERSelectionnes);
+	//		notificationUIService.AfficherMessage(new NotificationData()
+	//			{
+	//				Message = "BE de Règlement (s) envoyé(s) à l'étape supérieure.",
+	//				TypeMessage = TypeDeNotification.Succes
+	//			});
+
+	//		notificationUIService.CacherChargement();
+	//		SiPopupEnvoyerBERVisible = false;
+	//		ListeIDBERSelectionnes.Clear();
+	//		await RafraichirListeBER();
+	//		StateHasChanged();
+	//	}
+	//	catch (Exception exception)
+	//	{
+	//		AfficherMessageErreur(exception);
+	//	}
+	//}
+
+	//private void AnnulerEnvoyerBEREnEtapeSuperieure()
+	//{
+	//	SiPopupEnvoyerBERVisible = false;
+	//}
+
+	private async void SupprimerBERVisible()
+	{
+		try
+		{
+			notificationUIService.MontrerChargement();
+			await saisieBERService.SupprimerBERV2(IDBERASupprimer);
+			notificationUIService.AfficherMessage(new NotificationData()
+				{
+					Message = "BE de Règlement supprimée avec Succès",
+					TypeMessage = TypeDeNotification.Succes
+				});
+			SiPopupSupprimerBERVisible = false;
+			IDBERASupprimer = 0;
+			notificationUIService.CacherChargement();
+			await RafraichirListeBER();
+			StateHasChanged();
+		}
+		catch (Exception exception)
+		{
+			notificationUIService.CacherChargement();
+			AfficherMessageErreur(exception);
+		}
+	}
+
+	private void AnnulerSupprimerBERVisible()
+	{
+		SiPopupSupprimerBERVisible = false;
+	}
+
+	//private async void AfficherFichierSurNouvellePage(string CheminAbsoluFichier, string NomFichier)
+	//{
+	//	FileStream StreamFichier = new FileStream(CheminAbsoluFichier, System.IO.FileMode.Open, System.IO.FileAccess.Read);
+	//	MemoryStream stream = new MemoryStream();
+	//	StreamFichier.CopyTo(stream);
+	//	byte[] byteArray = stream.ToArray();
+	//	await JS.InvokeAsync<object>("openStreamInNewWindow", Convert.ToBase64String(byteArray), NomFichier);
+	//}
+
+	//private void AfficherModalSuppressionPieceJointe(string NomPieceJointe)
+	//{
+	//	NomPjASupprimer = NomPieceJointe;
+	//	SiSupressionPJPopupVisible = true;
+	//}
+
+	//private void RowSelectHandlerFacture(RowSelectEventArgs<AffichageFactureAvecPJ> args)
+	//{
+	//	if (args.IsInteracted)
+	//	{
+	//		ModelBER.ListeDesIDFacturesChoisis.Add(args.Data.IDFacture);
+	//	}
+	//	if (args.IsHeaderCheckboxClicked)
+	//	{
+	//		ModelBER.ListeDesIDFacturesChoisis.Clear();
+	//		//ModelBER.ListeDesIDFacturesChoisis.AddRange(ListeDesFacturesAChoisir.Select(e => e.IDFacture));
+	//	}
+	//}
+
+	//private void RowDeselectHandlerFacture(RowDeselectEventArgs<AffichageFactureAvecPJ> args)
+	//{
+	//	if (args.IsInteracted)
+	//	{
+	//		ModelBER.ListeDesIDFacturesChoisis.Remove(args.Data.IDFacture);
+	//	}
+	//	if (args.IsHeaderCheckboxClicked)
+	//	{
+	//		ModelBER.ListeDesIDFacturesChoisis.Clear();
+	//	}
+	//}
+
+
+	private void ChangerValeurRefFacture(int i, String args)
+	{
+		ListeFactures[i].RefFacture = args;
+	}
+
+	private void ChangerValeurDateEmission(int i, DateTime? args)
+	{
+		ListeFactures[i].DateEmission = (DateTime)args;
+	}
+
+	private void ChangerValeurListeTitres(int i, MultiSelectChangeEventArgs<List<AffichageTitreAutoCompletion>> args)
+	{
+		ListeFactures[i].ListeTitres = args.Value;
+	}
+
+	private void RowSelectHandlerBER(RowSelectEventArgs<AffichageBER> args)
+	{
+		if (args.IsInteracted)
+		{
+			ListeIDBERSelectionnes.Add(args.Data.IDBEReglement);
+		}
+		if (args.IsHeaderCheckboxClicked)
+		{
+			ListeIDBERSelectionnes.Clear();
+			ListeIDBERSelectionnes.AddRange(ListeDesBERs.Select(e => e.IDBEReglement));
+		}
+	}
+
+	private void RowDeselectHandlerBER(RowDeselectEventArgs<AffichageBER> args)
+	{
+		if (args.IsInteracted)
+		{
+			ListeIDBERSelectionnes.Remove(args.Data.IDBEReglement);
+		}
+		if (args.IsHeaderCheckboxClicked)
+		{
+			ListeIDBERSelectionnes.Clear();
+		}
+	}
+
+	private void ChangerNombreFacture(Microsoft.AspNetCore.Components.ChangeEventArgs Event)
+	{
+		NombreDeFactures = 0;
+		if (Int32.TryParse(Event.Value.ToString(), out int n)) NombreDeFactures = n;
+
+		ListeFactures.Clear();
+		ListeFactures.AddRange(Enumerable.Range(0, NombreDeFactures).Select(_ => new BERFactureModel
+			{
+				RefFacture = "",
+			}));
+		StateHasChanged();
+	}
+
+	private void AfficherMessageErreur(Exception exception)
+	{
+		notificationUIService.CacherChargement();
+		notificationUIService.AfficherMessage(new NotificationData()
+			{
+				Message = exception.Message,
+				TypeMessage = TypeDeNotification.Erreur
+			});
+	}
+}
