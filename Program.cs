@@ -55,6 +55,7 @@ builder.Services.AddTransient<IGestionCompagnieService, GestionCompagnieService>
 builder.Services.AddTransient<IGestionClasseService, GestionClasseService>();
 builder.Services.AddTransient<ISaisieRembService, SaisieRembService>();
 builder.Services.AddTransient<CreerPDFService>();
+// Commit Ninja
 
 //builder.Services.AddScoped<IAvoirService, AvoirService>();
 
